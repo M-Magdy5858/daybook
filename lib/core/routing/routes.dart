@@ -27,6 +27,7 @@ abstract final class Routes {
   static const files = '/more/files';
   static const places = '/more/places';
   static const settings = '/more/settings';
+  static const gallery = '/more/gallery';
 
   static const search = '/search';
   static const authRoutes = {login, register};

@@ -6,14 +6,17 @@ import 'package:daybook/features/auth/presentation/pages/splash.dart';
 import 'package:daybook/features/calendar/presentation/pages/calendar.dart';
 import 'package:daybook/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:daybook/features/habits/presentation/pages/habits.dart';
+import 'package:daybook/features/settings/presentation/pages/gallery.dart';
 import 'package:daybook/features/settings/presentation/pages/more.dart';
 import 'package:daybook/features/tasks/presentation/pages/tasks.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 final rootNavigationKey = GlobalKey<NavigatorState>();
 
 GoRouter createAppRouter() => GoRouter(
+  navigatorKey: rootNavigationKey,
   initialLocation: Routes.splash,
   routes: [
     GoRoute(path: Routes.splash, builder: (_, _) => const SplashPage()),
@@ -52,7 +55,18 @@ GoRouter createAppRouter() => GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: Routes.more, builder: (_, _) => const MorePage()),
+            GoRoute(
+              path: Routes.more,
+              builder: (_, _) => const MorePage(),
+              routes: [
+                if (kDebugMode)
+                  GoRoute(
+                    path: 'gallery',
+                    parentNavigatorKey: rootNavigationKey,
+                    builder: (_, _) => const GalleryPage(),
+                  ),
+              ],
+            ),
           ],
         ),
       ],

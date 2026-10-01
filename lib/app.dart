@@ -1,4 +1,5 @@
 import 'package:daybook/core/routing/app_router.dart';
+import 'package:daybook/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
@@ -8,14 +9,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      theme: AppTheme.light,      
+      darkTheme: AppTheme.dark,
       // themeMode: ThemeMode.dark,
       routerConfig: createAppRouter(),
     );
