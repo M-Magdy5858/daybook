@@ -1,6 +1,7 @@
-import 'package:daybook/core/routing/app_router.dart';
+import 'package:daybook/core/di/injection.dart';
 import 'package:daybook/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,8 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       theme: AppTheme.light,      
       darkTheme: AppTheme.dark,
-      // themeMode: ThemeMode.dark,
-      routerConfig: createAppRouter(),
+      routerConfig: getIt<GoRouter>(),
     );
   }
 }

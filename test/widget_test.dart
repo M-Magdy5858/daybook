@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:daybook/app.dart';
+import 'package:daybook/core/di/injection.dart';
 
 void main() {
+  setUp(configureDependencies);
+  tearDown(() => getIt.reset());
+
   testWidgets('navigates from splash to login to dashboard', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
