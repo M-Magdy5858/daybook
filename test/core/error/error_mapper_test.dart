@@ -14,6 +14,10 @@ void main() {
         const RequestTimeoutException(),
         const NetworkFailure('The request timed out'),
       ),
+      'RequestCancelledException': (
+        const RequestCancelledException(),
+        const CancelledFailure(),
+      ),
       'ServerException 401': (
         const ServerException('unauthorized', statusCode: 401),
         const UnauthorizedFailure('unauthorized'),

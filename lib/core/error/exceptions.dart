@@ -15,6 +15,10 @@ final class RequestTimeoutException extends AppException {
   const RequestTimeoutException([super.message = 'The request timed out']);
 }
 
+final class RequestCancelledException extends AppException {
+  const RequestCancelledException([super.message = 'The request was cancelled']);
+}
+
 final class ServerException extends AppException {
   const ServerException(super.message, {this.statusCode});
 

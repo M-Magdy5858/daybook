@@ -6,6 +6,7 @@ abstract final class ErrorMapper {
     return switch (e) {
       NetworkException(:final message) => NetworkFailure(message),
       RequestTimeoutException(:final message) => NetworkFailure(message),
+      RequestCancelledException(:final message) => CancelledFailure(message),
       ServerException(statusCode: 401 || 403, :final message) =>
         UnauthorizedFailure(message),
       ServerException(statusCode: 404, :final message) =>

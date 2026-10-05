@@ -13,6 +13,10 @@ final class NetworkFailure extends Failure {
   const NetworkFailure([super.message = 'No internet connection']);
 }
 
+final class CancelledFailure extends Failure {
+  const CancelledFailure([super.message = 'The request was cancelled']);
+}
+
 final class ServerFailure extends Failure {
   const ServerFailure([super.message = 'Server error, try again later']);
 }
