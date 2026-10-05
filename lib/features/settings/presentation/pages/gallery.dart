@@ -25,14 +25,14 @@ class GalleryPage extends StatelessWidget {
                 AppButton(
                   label: variant.name,
                   variant: variant,
-                  onPressed: () => context.showSnak('${variant.name} tapped'),
+                  onPressed: () => context.showSnack('${variant.name} tapped'),
                 ),
                 AppSpacing.gapSm,
               ],
               AppButton(
                 label: 'With icon',
                 icon: Icons.add,
-                onPressed: () => context.showSnak('icon tapped'),
+                onPressed: () => context.showSnack('icon tapped'),
               ),
               AppSpacing.gapSm,
               const AppButton(label: 'Loading', isLoading: true, onPressed: null),
@@ -42,7 +42,7 @@ class GalleryPage extends StatelessWidget {
               AppButton(
                 label: 'Expanded',
                 expand: true,
-                onPressed: () => context.showSnak('expanded tapped'),
+                onPressed: () => context.showSnack('expanded tapped'),
               ),
             ],
           ),
@@ -63,7 +63,7 @@ class GalleryPage extends StatelessWidget {
             children: [
               const AppCard(child: Text('Static card')),
               AppCard(
-                onTap: () => context.showSnak('card tapped'),
+                onTap: () => context.showSnack('card tapped'),
                 child: const Text('Tappable card'),
               ),
             ],
@@ -80,7 +80,7 @@ class GalleryPage extends StatelessWidget {
                 message: 'Tasks you add will show up here.',
                 action: AppButton(
                   label: 'Add task',
-                  onPressed: () => context.showSnak('add tapped'),
+                  onPressed: () => context.showSnack('add tapped'),
                 ),
               ),
             ],
@@ -90,7 +90,7 @@ class GalleryPage extends StatelessWidget {
             children: [
               AppErrorState(
                 message: 'Something went wrong.',
-                onRetry: () => context.showSnak('retry tapped'),
+                onRetry: () => context.showSnack('retry tapped'),
               ),
             ],
           ),

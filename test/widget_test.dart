@@ -18,10 +18,10 @@ void main() {
     await tester.tap(find.text('go to login'));
     await tester.pumpAndSettle();
 
-    // Login page is shown.
-    expect(find.text('home'), findsOneWidget);
-
-    await tester.tap(find.text('home'));
+    // Login page is shown; sign in with the demo account.
+    await tester.enterText(find.widgetWithText(TextFormField, 'Email'), 'demo@daybook.dev');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Password'), 'password123');
+    await tester.tap(find.text('Log in'));
     await tester.pumpAndSettle();
 
     // Dashboard is shown inside the app shell. The default 800x600 test
