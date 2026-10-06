@@ -1,4 +1,5 @@
 import 'package:daybook/core/theme/app_spacing.dart';
+import 'package:daybook/features/auth/presentation/widgets/auth_layout.dart';
 import 'package:daybook/shared/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,7 @@ class SplashPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.menu_book, size: 72, color: context.colors.primary),
+            const AppLogo(size: 88),
             const SizedBox(height: AppSpacing.lg),
             Text('Daybook', style: context.text.headlineMedium),
             const SizedBox(height: AppSpacing.xl),
