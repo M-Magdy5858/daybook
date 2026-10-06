@@ -1,7 +1,8 @@
-import 'package:daybook/core/routing/routes.dart';
+import 'package:daybook/core/theme/app_spacing.dart';
+import 'package:daybook/shared/extensions/context_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+/// Shown while the stored session is checked; the router redirect moves on.
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
 
@@ -9,9 +10,15 @@ class SplashPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: ElevatedButton(
-          onPressed: ()=> context.push(Routes.login),
-          child: const Text('go to login'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.menu_book, size: 72, color: context.colors.primary),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Daybook', style: context.text.headlineMedium),
+            const SizedBox(height: AppSpacing.xl),
+            const CircularProgressIndicator(),
+          ],
         ),
       ),
     );

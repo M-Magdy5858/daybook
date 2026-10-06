@@ -8,11 +8,8 @@ class AppShell extends StatelessWidget {
 
   static const compactBreakpoint = 600.0;
 
-  void _onSelectedIndexChanged (int index) {
-    navShell.goBranch(
-      index,
-      initialLocation: index == navShell.currentIndex,
-    );
+  void _onSelectedIndexChanged(int index) {
+    navShell.goBranch(index, initialLocation: index == navShell.currentIndex);
   }
 
   @override

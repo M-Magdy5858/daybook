@@ -31,14 +31,20 @@ class AppButton extends StatelessWidget {
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 8)],
+              if (icon != null) ...[
+                Icon(icon, size: 18),
+                const SizedBox(width: 8),
+              ],
               Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
             ],
           );
 
     final button = switch (variant) {
       AppButtonVariant.primary => FilledButton(onPressed: onTap, child: child),
-      AppButtonVariant.secondary => OutlinedButton(onPressed: onTap, child: child),
+      AppButtonVariant.secondary => OutlinedButton(
+        onPressed: onTap,
+        child: child,
+      ),
       AppButtonVariant.text => TextButton(onPressed: onTap, child: child),
     };
 

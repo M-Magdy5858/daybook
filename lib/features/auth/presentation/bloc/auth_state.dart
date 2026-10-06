@@ -29,3 +29,7 @@ final class AuthFailure extends AuthState {
   @override
   List<Object?> get props => [failure];
 }
+
+final class Unauthenticated extends AuthState {
+  const Unauthenticated();
+}

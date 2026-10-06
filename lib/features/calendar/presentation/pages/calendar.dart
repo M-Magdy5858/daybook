@@ -5,10 +5,6 @@ class CalendarPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Calendar Page'),
-      ),
-    );
+    return const Scaffold(body: Center(child: Text('Calendar Page')));
   }
 }

@@ -11,10 +11,7 @@ class AppLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Semantics(
-        label: label,
-        child: const CircularProgressIndicator(),
-      ),
+      child: Semantics(label: label, child: const CircularProgressIndicator()),
     );
   }
 }

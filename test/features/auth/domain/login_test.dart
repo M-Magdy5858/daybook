@@ -9,7 +9,10 @@ void main() {
   final login = Login(FakeAuthRepository());
 
   test('correct credentials -> Success', () async {
-    expect(await login(email: 'demo@daybook.dev', password: 'password123'), isA<Success<User>>());
+    expect(
+      await login(email: 'demo@daybook.dev', password: 'password123'),
+      isA<Success<User>>(),
+    );
   });
 
   test('wrong password -> UnauthorizedFailure', () async {
@@ -18,6 +21,9 @@ void main() {
   });
 
   test('email is trimmed', () async {
-    expect(await login(email: '  demo@daybook.dev ', password: 'password123'), isA<Success<User>>());
+    expect(
+      await login(email: '  demo@daybook.dev ', password: 'password123'),
+      isA<Success<User>>(),
+    );
   });
 }

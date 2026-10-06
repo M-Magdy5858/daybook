@@ -1,5 +1,6 @@
 import 'package:daybook/core/error/exceptions.dart';
 import 'package:daybook/core/error/failures.dart';
+import 'package:daybook/core/storage/token_storage.dart';
 import 'package:daybook/core/utils/result.dart';
 import 'package:daybook/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:daybook/features/auth/data/repositories/auth_repository_impl.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockRemote extends Mock implements AuthRemoteDataSource {}
+
+class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
   test(
@@ -20,6 +23,7 @@ void main() {
 
       final result = await AuthRepositoryImpl(
         remote,
+        MockTokenStorage(),
       ).login(email: 'a', password: 'b');
 
       expect((result as Err<User>).failure, isA<UnauthorizedFailure>());

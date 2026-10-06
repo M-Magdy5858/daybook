@@ -4,6 +4,8 @@ import 'package:daybook/features/auth/domain/entities/user.dart';
 import 'package:daybook/features/auth/domain/reposatory/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
+  User? _current;
+
   // Pretend database: users, plus each user's password keyed by email.
   final List<User> _users = [
     const User(id: '1', email: 'demo@daybook.dev', name: 'Demo'),
@@ -24,6 +26,7 @@ class FakeAuthRepository implements AuthRepository {
       return const Err(UnauthorizedFailure('Wrong email or password'));
     }
 
+    _current = user;
     return Success(user);
   }
 
@@ -51,6 +54,21 @@ class FakeAuthRepository implements AuthRepository {
     );
     _users.add(user);
     _passwords[email] = password;
+    _current = user;
     return Success(user);
+  }
+
+  @override
+  Future<Result<User>> getCurrentUser() async {
+    final user = _current;
+    return user == null
+        ? const Err(UnauthorizedFailure('Not logged in'))
+        : Success(user);
+  }
+
+  @override
+  Future<Result<void>> logout() async {
+    _current = null;
+    return const Success(null);
   }
 }

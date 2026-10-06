@@ -43,14 +43,15 @@ class _RegisterPageState extends State<RegisterPage> {
         listener: (context, state) {
           if (state is AuthFailure) {
             final failure = state.failure;
-            final emailError = failure is ValidationFailure ? failure.fieldErrors['email'] : null;
+            final emailError = failure is ValidationFailure
+                ? failure.fieldErrors['email']
+                : null;
             if (emailError != null) {
               setState(() => _emailError = emailError);
             } else {
               context.showSnack(failure.message);
             }
           }
-          if (state is Authenticated) context.go(Routes.dashboard);
         },
         builder: (context, state) => Form(
           key: _formKey,
@@ -84,7 +85,8 @@ class _RegisterPageState extends State<RegisterPage> {
               AppTextField(
                 label: 'Confirm Password',
                 controller: _passwordConfirm,
-                validator: ((value) => value != _password.text ? 'Not matching password': null),
+                validator: ((value) =>
+                    value != _password.text ? 'Not matching password' : null),
                 obscureText: true,
               ),
               const SizedBox(height: AppSpacing.xl),

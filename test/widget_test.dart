@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:daybook/app.dart';
 import 'package:daybook/core/di/injection.dart';
 
 void main() {
-  setUp(configureDependencies);
+  setUp(() {
+    FlutterSecureStorage.setMockInitialValues({});
+    return configureDependencies();
+  });
   tearDown(() => getIt.reset());
 
-  testWidgets('navigates from splash to login to dashboard', (WidgetTester tester) async {
+  testWidgets('no session -> login -> dashboard', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
-    // Starts on the splash page.
-    expect(find.text('go to login'), findsOneWidget);
-
-    await tester.tap(find.text('go to login'));
-    await tester.pumpAndSettle();
-
+    // No stored session, so the redirect leaves splash for login.
     // Login page is shown; sign in with the demo account.
-    await tester.enterText(find.widgetWithText(TextFormField, 'Email'), 'demo@daybook.dev');
-    await tester.enterText(find.widgetWithText(TextFormField, 'Password'), 'password123');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'demo@daybook.dev',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'password123',
+    );
     await tester.tap(find.text('Log in'));
     await tester.pumpAndSettle();
 

@@ -80,10 +80,7 @@ void main() {
         const UnknownException('weird'),
         const UnknownFailure('weird'),
       ),
-      'non-AppException': (
-        StateError('bad state'),
-        const UnknownFailure(),
-      ),
+      'non-AppException': (StateError('bad state'), const UnknownFailure()),
     };
 
     cases.forEach((name, testCase) {

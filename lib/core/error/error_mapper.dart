@@ -9,10 +9,12 @@ abstract final class ErrorMapper {
       RequestCancelledException(:final message) => CancelledFailure(message),
       ServerException(statusCode: 401 || 403, :final message) =>
         UnauthorizedFailure(message),
-      ServerException(statusCode: 404, :final message) =>
-        NotFoundFailure(message),
-      ServerException(statusCode: 409, :final message) =>
-        ConflictFailure(message),
+      ServerException(statusCode: 404, :final message) => NotFoundFailure(
+        message,
+      ),
+      ServerException(statusCode: 409, :final message) => ConflictFailure(
+        message,
+      ),
       ServerException(:final message) => ServerFailure(message),
       AuthenticationException(:final message) => UnauthorizedFailure(message),
       NotFoundException(:final message) => NotFoundFailure(message),

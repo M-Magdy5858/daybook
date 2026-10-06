@@ -36,7 +36,6 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) context.showSnack(state.failure.message);
-          if (state is Authenticated) context.go(Routes.dashboard);
         },
         builder: (context, state) => Form(
           key: _formKey,

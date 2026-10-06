@@ -35,7 +35,11 @@ class GalleryPage extends StatelessWidget {
                 onPressed: () => context.showSnack('icon tapped'),
               ),
               AppSpacing.gapSm,
-              const AppButton(label: 'Loading', isLoading: true, onPressed: null),
+              const AppButton(
+                label: 'Loading',
+                isLoading: true,
+                onPressed: null,
+              ),
               AppSpacing.gapSm,
               const AppButton(label: 'Disabled', onPressed: null),
               AppSpacing.gapSm,
@@ -49,11 +53,22 @@ class GalleryPage extends StatelessWidget {
           const _Section(
             title: 'AppTextField',
             children: [
-              AppTextField(label: 'Email', hint: 'you@example.com', prefixIcon: Icons.email_outlined),
+              AppTextField(
+                label: 'Email',
+                hint: 'you@example.com',
+                prefixIcon: Icons.email_outlined,
+              ),
               AppSpacing.gapMd,
-              AppTextField(label: 'Password', obscureText: true, prefixIcon: Icons.lock_outline),
+              AppTextField(
+                label: 'Password',
+                obscureText: true,
+                prefixIcon: Icons.lock_outline,
+              ),
               AppSpacing.gapMd,
-              AppTextField(label: 'With error', errorText: 'This field is required'),
+              AppTextField(
+                label: 'With error',
+                errorText: 'This field is required',
+              ),
               AppSpacing.gapMd,
               AppTextField(label: 'Notes', maxLines: 3),
             ],

@@ -11,6 +11,8 @@ class AuthRoutes {
     'POST /auth/login': _login,
     'POST /auth/register': _register,
     'GET /auth/me': _me,
+    'POST /auth/refresh': _refresh,
+    'POST /auth/logout': _logout,
   };
 
   Future<MockResponse> _login(RequestOptions req) async {
@@ -58,6 +60,22 @@ class AuthRoutes {
     if (user == null) return unauthorized;
     return MockResponse(200, {'user': user.toJson()});
   }
+
+  // _refresh: a valid refresh token gets a new token pair; anything else is 401.
+  Future<MockResponse> _refresh(RequestOptions req) async {
+    const unauthorized = MockResponse(401, {'message': 'Session expired'});
+    final body = req.data as Map<String, dynamic>?;
+    final token = body?['refreshToken'] as String?;
+    if (token == null || FakeJwt.isExpired(token)) return unauthorized;
+
+    final userId = FakeJwt.payload(token)['sub'];
+    final user = _state.users.where((u) => u.id == userId).firstOrNull;
+    if (user == null) return unauthorized;
+    return _session(200, user);
+  }
+
+  Future<MockResponse> _logout(RequestOptions req) async =>
+      const MockResponse(200, {'message': 'Logged out'});
 
   MockResponse _session(int statusCode, MockUser user) =>
       MockResponse(statusCode, {
