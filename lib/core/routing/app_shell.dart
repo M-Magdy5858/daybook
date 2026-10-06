@@ -14,24 +14,24 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final destinations = [
+    const destinations = [
       (
         icon: Icons.dashboard_outlined,
         selected: Icons.dashboard,
-        label: 'dashboard',
+        label: 'Dashboard',
       ),
-      (icon: Icons.task_alt_outlined, selected: Icons.task_alt, label: 'tasks'),
+      (icon: Icons.task_alt_outlined, selected: Icons.task_alt, label: 'Tasks'),
       (
-        icon: Icons.task_alt_outlined,
-        selected: Icons.task_alt,
-        label: 'calendar',
+        icon: Icons.calendar_month_outlined,
+        selected: Icons.calendar_month,
+        label: 'Calendar',
       ),
       (
-        icon: Icons.task_alt_outlined,
-        selected: Icons.task_alt,
-        label: 'habits',
+        icon: Icons.local_fire_department_outlined,
+        selected: Icons.local_fire_department,
+        label: 'Habits',
       ),
-      (icon: Icons.task_alt_outlined, selected: Icons.task_alt, label: 'more'),
+      (icon: Icons.more_horiz, selected: Icons.more_horiz, label: 'More'),
     ];
 
     return LayoutBuilder(

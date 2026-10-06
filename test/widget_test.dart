@@ -32,6 +32,6 @@ void main() {
     // Dashboard is shown inside the app shell. The default 800x600 test
     // surface is above the compact breakpoint, so the rail is used.
     expect(find.byType(NavigationRail), findsOneWidget);
-    expect(find.text('dashboard'), findsWidgets);
+    expect(find.text('Dashboard'), findsWidgets);
   });
 }
