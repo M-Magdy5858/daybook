@@ -8,7 +8,7 @@ import 'package:daybook/core/storage/outbox.dart';
 import 'package:daybook/core/utils/result.dart';
 import 'package:daybook/features/tasks/data/datasources/task_local_data_source.dart';
 import 'package:daybook/features/tasks/data/models/task_model.dart';
-import 'package:daybook/features/tasks/data/sync/sync_engine.dart';
+import 'package:daybook/core/sync/sync_engine.dart';
 import 'package:daybook/features/tasks/domain/entities/task.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
 

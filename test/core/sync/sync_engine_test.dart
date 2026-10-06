@@ -7,12 +7,11 @@ import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/task_routes.dart';
 import 'package:daybook/core/storage/app_database.dart';
 import 'package:daybook/core/storage/outbox.dart';
+import 'package:daybook/core/sync/sync_engine.dart';
 import 'package:daybook/core/utils/result.dart';
 import 'package:daybook/features/tasks/data/datasources/task_local_data_source.dart';
-import 'package:daybook/features/tasks/data/datasources/task_remote_data_source.dart';
 import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
-import 'package:daybook/features/tasks/data/sync/conflict_resolver.dart';
-import 'package:daybook/features/tasks/data/sync/sync_engine.dart';
+import 'package:daybook/features/tasks/data/sync/task_sync_store.dart';
 import 'package:daybook/features/tasks/domain/entities/task.dart';
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
@@ -44,13 +43,11 @@ void main() {
         ..httpClientAdapter = MockApiAdapter(settings, router),
     );
     final local = TaskLocalDataSource(db);
-    final remote = TaskRemoteDataSource(api);
     outbox = Outbox(db);
     engine = SyncEngine(
       outbox: outbox,
-      local: local,
-      remote: remote,
-      resolver: ConflictResolver(local: local, remote: remote),
+      api: api,
+      stores: [TaskSyncStore(local)],
       connectivity: FakeConnectivity(),
     );
     repo = TaskRepositoryImpl(

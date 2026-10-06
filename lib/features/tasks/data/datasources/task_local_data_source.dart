@@ -72,6 +72,13 @@ class TaskLocalDataSource {
         TasksCompanion(version: Value(version)),
       );
 
+  Future<Map<String, ({DateTime updatedAt, int version})>> syncInfo() async {
+    final rows = await _db.select(_db.tasks).get();
+    return {
+      for (final r in rows) r.id: (updatedAt: r.updatedAt, version: r.version),
+    };
+  }
+
   List<Task> _toEntities(List<TypedResult> rows) {
     final tasks = <String, TaskRow>{};
     final subtasks = <String, List<SubtaskRow>>{};

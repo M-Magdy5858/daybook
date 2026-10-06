@@ -13,6 +13,7 @@ import 'package:daybook/core/routing/app_router.dart';
 import 'package:daybook/core/storage/app_database.dart';
 import 'package:daybook/core/storage/outbox.dart';
 import 'package:daybook/core/storage/token_storage.dart';
+import 'package:daybook/core/sync/sync_engine.dart';
 import 'package:daybook/core/utils/id.dart';
 import 'package:daybook/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:daybook/features/auth/data/repositories/auth_repository_impl.dart';
@@ -25,10 +26,8 @@ import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_event.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_state.dart';
 import 'package:daybook/features/tasks/data/datasources/task_local_data_source.dart';
-import 'package:daybook/features/tasks/data/datasources/task_remote_data_source.dart';
 import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
-import 'package:daybook/features/tasks/data/sync/conflict_resolver.dart';
-import 'package:daybook/features/tasks/data/sync/sync_engine.dart';
+import 'package:daybook/features/tasks/data/sync/task_sync_store.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
 import 'package:daybook/features/tasks/domain/usecases/complete_task.dart';
 import 'package:daybook/features/tasks/domain/usecases/delete_task.dart';
@@ -47,7 +46,25 @@ final getIt = GetIt.instance;
 Future<void> configureDependencies({bool testing = false}) async {
   _registerCore();
   _registerAuth();
+  _registerSync();
   _registerTasks();
+}
+
+/// One engine syncs every kind of item through the shared outbox.
+void _registerSync() {
+  getIt
+    ..registerLazySingleton<TaskLocalDataSource>(
+      () => TaskLocalDataSource(getIt()),
+    )
+    ..registerLazySingleton<SyncEngine>(
+      () => SyncEngine(
+        outbox: getIt(),
+        api: getIt(),
+        stores: [TaskSyncStore(getIt())],
+        connectivity: getIt(),
+      ),
+      dispose: (engine) => engine.stop(),
+    );
 }
 
 void _registerCore() {
@@ -106,25 +123,6 @@ void _registerAuth() {
 
 void _registerTasks() {
   getIt
-    ..registerLazySingleton<TaskLocalDataSource>(
-      () => TaskLocalDataSource(getIt()),
-    )
-    ..registerLazySingleton<TaskRemoteDataSource>(
-      () => TaskRemoteDataSource(getIt()),
-    )
-    ..registerLazySingleton<ConflictResolver>(
-      () => ConflictResolver(local: getIt(), remote: getIt()),
-    )
-    ..registerLazySingleton<SyncEngine>(
-      () => SyncEngine(
-        outbox: getIt(),
-        local: getIt(),
-        remote: getIt(),
-        resolver: getIt(),
-        connectivity: getIt(),
-      ),
-      dispose: (engine) => engine.stop(),
-    )
     ..registerLazySingleton<TaskRepository>(
       () => TaskRepositoryImpl(
         db: getIt(),
