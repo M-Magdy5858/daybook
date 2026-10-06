@@ -8,6 +8,7 @@ import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
 import 'package:daybook/core/routing/app_router.dart';
 import 'package:daybook/core/storage/token_storage.dart';
+import 'package:daybook/core/utils/id.dart';
 import 'package:daybook/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:daybook/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:daybook/features/auth/domain/reposatory/auth_repository.dart';
@@ -17,6 +18,14 @@ import 'package:daybook/features/auth/domain/usecases/logout.dart';
 import 'package:daybook/features/auth/domain/usecases/register.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_event.dart';
+import 'package:daybook/features/tasks/data/repositories/in_memory_task_repository.dart';
+import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
+import 'package:daybook/features/tasks/domain/usecases/complete_task.dart';
+import 'package:daybook/features/tasks/domain/usecases/delete_task.dart';
+import 'package:daybook/features/tasks/domain/usecases/refresh_tasks.dart';
+import 'package:daybook/features/tasks/domain/usecases/save_task.dart';
+import 'package:daybook/features/tasks/domain/usecases/watch_tasks.dart';
+import 'package:daybook/features/tasks/presentation/bloc/tasks_bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -28,7 +37,7 @@ final getIt = GetIt.instance;
 Future<void> configureDependencies({bool testing = false}) async {
   _registerCore();
   _registerAuth();
-  _registerFeatures();
+  _registerTasks();
 }
 
 void _registerCore() {
@@ -73,7 +82,27 @@ void _registerAuth() {
     );
 }
 
-void _registerFeatures() {}
+void _registerTasks() {
+  getIt
+    ..registerLazySingleton<TaskRepository>(InMemoryTaskRepository.new)
+    ..registerLazySingleton<WatchTasks>(() => WatchTasks(getIt()))
+    ..registerLazySingleton<SaveTask>(() => SaveTask(getIt()))
+    ..registerLazySingleton<DeleteTask>(() => DeleteTask(getIt()))
+    ..registerLazySingleton<CompleteTask>(
+      () => CompleteTask(getIt(), newId: newId),
+    )
+    ..registerLazySingleton<RefreshTasks>(() => RefreshTasks(getIt()))
+    // A fresh Bloc each time the Tasks screen opens.
+    ..registerFactory<TasksBloc>(
+      () => TasksBloc(
+        watchTasks: getIt(),
+        saveTask: getIt(),
+        deleteTask: getIt(),
+        completeTask: getIt(),
+        refreshTasks: getIt(),
+      ),
+    );
+}
 
 /// A Dio pointed at the mock or real API. Used for the main client and for
 /// the refresh client, which must not carry the [AuthInterceptor].

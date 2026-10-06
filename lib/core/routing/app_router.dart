@@ -14,9 +14,14 @@ import 'package:daybook/features/habits/presentation/pages/habits.dart';
 import 'package:daybook/features/settings/presentation/pages/dev_tools.dart';
 import 'package:daybook/features/settings/presentation/pages/gallery.dart';
 import 'package:daybook/features/settings/presentation/pages/more.dart';
+import 'package:daybook/features/tasks/presentation/bloc/tasks_bloc.dart';
+import 'package:daybook/features/tasks/presentation/bloc/tasks_event.dart';
+import 'package:daybook/features/tasks/presentation/pages/task_details.dart';
+import 'package:daybook/features/tasks/presentation/pages/task_form.dart';
 import 'package:daybook/features/tasks/presentation/pages/tasks.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 final rootNavigationKey = GlobalKey<NavigatorState>();
@@ -60,7 +65,38 @@ GoRouter createAppRouter(AuthBloc auth) => GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: Routes.tasks, builder: (_, _) => const TasksPage()),
+            // One TasksBloc for the list and every page pushed from it.
+            ShellRoute(
+              builder: (_, _, child) => BlocProvider(
+                create: (_) => getIt<TasksBloc>()..add(const TasksSubscribed()),
+                child: child,
+              ),
+              routes: [
+                GoRoute(
+                  path: Routes.tasks,
+                  builder: (_, _) => const TasksPage(),
+                  routes: [
+                    // 'new' must come before ':id', or "new" would be an id.
+                    GoRoute(
+                      path: 'new',
+                      builder: (_, _) => const TaskFormPage(),
+                    ),
+                    GoRoute(
+                      path: ':id',
+                      builder: (_, s) =>
+                          TaskDetailsPage(id: s.pathParameters['id']!),
+                      routes: [
+                        GoRoute(
+                          path: 'edit',
+                          builder: (_, s) =>
+                              TaskFormPage(id: s.pathParameters['id']),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
         StatefulShellBranch(
