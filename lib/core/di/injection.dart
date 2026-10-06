@@ -8,6 +8,7 @@ import 'package:daybook/core/network/mock/mock_router.dart';
 import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
+import 'package:daybook/core/network/mock/routes/event_routes.dart';
 import 'package:daybook/core/network/mock/routes/task_routes.dart';
 import 'package:daybook/core/routing/app_router.dart';
 import 'package:daybook/core/storage/app_database.dart';
@@ -26,6 +27,10 @@ import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_event.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_state.dart';
 import 'package:daybook/features/tasks/data/datasources/task_local_data_source.dart';
+import 'package:daybook/features/calendar/data/datasources/event_local_data_source.dart';
+import 'package:daybook/features/calendar/data/repositories/event_repository_impl.dart';
+import 'package:daybook/features/calendar/data/sync/event_sync_store.dart';
+import 'package:daybook/features/calendar/domain/repositories/event_repository.dart';
 import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:daybook/features/tasks/data/sync/task_sync_store.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
@@ -48,6 +53,7 @@ Future<void> configureDependencies({bool testing = false}) async {
   _registerAuth();
   _registerSync();
   _registerTasks();
+  _registerCalendar();
 }
 
 /// One engine syncs every kind of item through the shared outbox.
@@ -56,11 +62,14 @@ void _registerSync() {
     ..registerLazySingleton<TaskLocalDataSource>(
       () => TaskLocalDataSource(getIt()),
     )
+    ..registerLazySingleton<EventLocalDataSource>(
+      () => EventLocalDataSource(getIt()),
+    )
     ..registerLazySingleton<SyncEngine>(
       () => SyncEngine(
         outbox: getIt(),
         api: getIt(),
-        stores: [TaskSyncStore(getIt())],
+        stores: [TaskSyncStore(getIt()), EventSyncStore(getIt())],
         connectivity: getIt(),
       ),
       dispose: (engine) => engine.stop(),
@@ -75,6 +84,7 @@ void _registerCore() {
       final router = MockRouter();
       AuthRoutes(getIt()).register(router);
       TaskRoutes(getIt()).register(router);
+      EventRoutes(getIt()).register(router);
       return router;
     })
     ..registerLazySingleton<AppDatabase>(
@@ -148,6 +158,17 @@ void _registerTasks() {
         refreshTasks: getIt(),
       ),
     );
+}
+
+void _registerCalendar() {
+  getIt.registerLazySingleton<EventRepository>(
+    () => EventRepositoryImpl(
+      db: getIt(),
+      local: getIt(),
+      outbox: getIt(),
+      sync: getIt(),
+    ),
+  );
 }
 
 /// Runs background services only while someone is logged in. Called from

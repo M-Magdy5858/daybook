@@ -6,7 +6,9 @@ class MockUser {
 
 /// The mock server's in-memory "database". It resets when the app restarts.
 class MockServerState {
-  MockServerState({DateTime? now}) : tasks = _seedTasks(now ?? DateTime.now());
+  MockServerState({DateTime? now})
+    : tasks = _seedTasks(now ?? DateTime.now()),
+      events = _seedEvents(now ?? DateTime.now());
 
   final users = <MockUser>[
     MockUser('1', 'Demo', 'demo@daybook.dev', 'password123'),
@@ -14,6 +16,9 @@ class MockServerState {
 
   /// Tasks as JSON maps, keyed by id.
   final Map<String, Map<String, dynamic>> tasks;
+
+  /// Calendar events as JSON maps, keyed by id.
+  final Map<String, Map<String, dynamic>> events;
 
   /// Pretend someone edited [taskId] on another device: bump its version and
   /// change its title. Returns false if there's no such task.
@@ -67,6 +72,80 @@ class MockServerState {
           'updatedAt': seededAt,
           'version': 1,
         },
+    };
+  }
+
+  static Map<String, Map<String, dynamic>> _seedEvents(DateTime now) {
+    final seededAt = DateTime.utc(2026).toIso8601String();
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    String at(DateTime day, int hour, [int minute = 0]) => DateTime(
+      day.year,
+      day.month,
+      day.day,
+      hour,
+      minute,
+    ).toUtc().toIso8601String();
+    Map<String, dynamic> event(
+      String id,
+      String title,
+      String start,
+      String end, {
+      int color = 0xFF1E88E5,
+      bool allDay = false,
+      Map<String, dynamic>? recurrence,
+    }) => {
+      'id': id,
+      'title': title,
+      'start': start,
+      'end': end,
+      'allDay': allDay,
+      'colorValue': color,
+      'recurrence': recurrence,
+      'excludedDates': <String>[],
+      'linkedTaskId': null,
+      'createdAt': seededAt,
+      'updatedAt': seededAt,
+      'version': 1,
+    };
+    final today = DateTime(now.year, now.month, now.day);
+    final holiday = DateTime(now.year, now.month, now.day + 5);
+    return {
+      for (final e in [
+        event(
+          'event-standup',
+          'Team stand-up',
+          at(monday, 10),
+          at(monday, 10, 30),
+          recurrence: {
+            'type': 'weekly',
+            'weekdays': [1, 4],
+          },
+        ),
+        event(
+          'event-lunch',
+          'Lunch with Sara',
+          at(today, 13),
+          at(today, 14),
+          color: 0xFF43A047,
+        ),
+        event(
+          'event-gym',
+          'Gym',
+          at(monday, 18),
+          at(monday, 19),
+          color: 0xFFE65100,
+          recurrence: {'type': 'everyNDays', 'n': 2},
+        ),
+        event(
+          'event-holiday',
+          'Public holiday',
+          at(holiday, 0),
+          at(holiday.add(const Duration(days: 1)), 0),
+          color: 0xFF8E24AA,
+          allDay: true,
+        ),
+      ])
+        e['id'] as String: e,
     };
   }
 }

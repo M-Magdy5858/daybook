@@ -1532,6 +1532,726 @@ class PendingMutationsCompanion extends UpdateCompanion<PendingMutation> {
   }
 }
 
+class $EventsTable extends Events with TableInfo<$EventsTable, EventRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 200,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _startMeta = const VerificationMeta('start');
+  @override
+  late final GeneratedColumn<DateTime> start = GeneratedColumn<DateTime>(
+    'start',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endMeta = const VerificationMeta('end');
+  @override
+  late final GeneratedColumn<DateTime> end = GeneratedColumn<DateTime>(
+    'end',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _allDayMeta = const VerificationMeta('allDay');
+  @override
+  late final GeneratedColumn<bool> allDay = GeneratedColumn<bool>(
+    'all_day',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("all_day" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _colorValueMeta = const VerificationMeta(
+    'colorValue',
+  );
+  @override
+  late final GeneratedColumn<int> colorValue = GeneratedColumn<int>(
+    'color_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recurrenceJsonMeta = const VerificationMeta(
+    'recurrenceJson',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceJson = GeneratedColumn<String>(
+    'recurrence_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _excludedDatesJsonMeta = const VerificationMeta(
+    'excludedDatesJson',
+  );
+  @override
+  late final GeneratedColumn<String> excludedDatesJson =
+      GeneratedColumn<String>(
+        'excluded_dates_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('[]'),
+      );
+  static const VerificationMeta _linkedTaskIdMeta = const VerificationMeta(
+    'linkedTaskId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedTaskId = GeneratedColumn<String>(
+    'linked_task_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    title,
+    start,
+    end,
+    allDay,
+    colorValue,
+    recurrenceJson,
+    excludedDatesJson,
+    linkedTaskId,
+    createdAt,
+    updatedAt,
+    version,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EventRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('start')) {
+      context.handle(
+        _startMeta,
+        start.isAcceptableOrUnknown(data['start']!, _startMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startMeta);
+    }
+    if (data.containsKey('end')) {
+      context.handle(
+        _endMeta,
+        end.isAcceptableOrUnknown(data['end']!, _endMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endMeta);
+    }
+    if (data.containsKey('all_day')) {
+      context.handle(
+        _allDayMeta,
+        allDay.isAcceptableOrUnknown(data['all_day']!, _allDayMeta),
+      );
+    }
+    if (data.containsKey('color_value')) {
+      context.handle(
+        _colorValueMeta,
+        colorValue.isAcceptableOrUnknown(data['color_value']!, _colorValueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_colorValueMeta);
+    }
+    if (data.containsKey('recurrence_json')) {
+      context.handle(
+        _recurrenceJsonMeta,
+        recurrenceJson.isAcceptableOrUnknown(
+          data['recurrence_json']!,
+          _recurrenceJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('excluded_dates_json')) {
+      context.handle(
+        _excludedDatesJsonMeta,
+        excludedDatesJson.isAcceptableOrUnknown(
+          data['excluded_dates_json']!,
+          _excludedDatesJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_task_id')) {
+      context.handle(
+        _linkedTaskIdMeta,
+        linkedTaskId.isAcceptableOrUnknown(
+          data['linked_task_id']!,
+          _linkedTaskIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EventRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EventRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      start: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start'],
+      )!,
+      end: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end'],
+      )!,
+      allDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}all_day'],
+      )!,
+      colorValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color_value'],
+      )!,
+      recurrenceJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_json'],
+      ),
+      excludedDatesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}excluded_dates_json'],
+      )!,
+      linkedTaskId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_task_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+    );
+  }
+
+  @override
+  $EventsTable createAlias(String alias) {
+    return $EventsTable(attachedDatabase, alias);
+  }
+}
+
+class EventRow extends DataClass implements Insertable<EventRow> {
+  final String id;
+  final String title;
+  final DateTime start;
+  final DateTime end;
+  final bool allDay;
+  final int colorValue;
+  final String? recurrenceJson;
+
+  /// A JSON list of `yyyy-MM-dd` days removed from a repeating series.
+  final String excludedDatesJson;
+  final String? linkedTaskId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final int version;
+  const EventRow({
+    required this.id,
+    required this.title,
+    required this.start,
+    required this.end,
+    required this.allDay,
+    required this.colorValue,
+    this.recurrenceJson,
+    required this.excludedDatesJson,
+    this.linkedTaskId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.version,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['title'] = Variable<String>(title);
+    map['start'] = Variable<DateTime>(start);
+    map['end'] = Variable<DateTime>(end);
+    map['all_day'] = Variable<bool>(allDay);
+    map['color_value'] = Variable<int>(colorValue);
+    if (!nullToAbsent || recurrenceJson != null) {
+      map['recurrence_json'] = Variable<String>(recurrenceJson);
+    }
+    map['excluded_dates_json'] = Variable<String>(excludedDatesJson);
+    if (!nullToAbsent || linkedTaskId != null) {
+      map['linked_task_id'] = Variable<String>(linkedTaskId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['version'] = Variable<int>(version);
+    return map;
+  }
+
+  EventsCompanion toCompanion(bool nullToAbsent) {
+    return EventsCompanion(
+      id: Value(id),
+      title: Value(title),
+      start: Value(start),
+      end: Value(end),
+      allDay: Value(allDay),
+      colorValue: Value(colorValue),
+      recurrenceJson: recurrenceJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceJson),
+      excludedDatesJson: Value(excludedDatesJson),
+      linkedTaskId: linkedTaskId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedTaskId),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      version: Value(version),
+    );
+  }
+
+  factory EventRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EventRow(
+      id: serializer.fromJson<String>(json['id']),
+      title: serializer.fromJson<String>(json['title']),
+      start: serializer.fromJson<DateTime>(json['start']),
+      end: serializer.fromJson<DateTime>(json['end']),
+      allDay: serializer.fromJson<bool>(json['allDay']),
+      colorValue: serializer.fromJson<int>(json['colorValue']),
+      recurrenceJson: serializer.fromJson<String?>(json['recurrenceJson']),
+      excludedDatesJson: serializer.fromJson<String>(json['excludedDatesJson']),
+      linkedTaskId: serializer.fromJson<String?>(json['linkedTaskId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      version: serializer.fromJson<int>(json['version']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'title': serializer.toJson<String>(title),
+      'start': serializer.toJson<DateTime>(start),
+      'end': serializer.toJson<DateTime>(end),
+      'allDay': serializer.toJson<bool>(allDay),
+      'colorValue': serializer.toJson<int>(colorValue),
+      'recurrenceJson': serializer.toJson<String?>(recurrenceJson),
+      'excludedDatesJson': serializer.toJson<String>(excludedDatesJson),
+      'linkedTaskId': serializer.toJson<String?>(linkedTaskId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'version': serializer.toJson<int>(version),
+    };
+  }
+
+  EventRow copyWith({
+    String? id,
+    String? title,
+    DateTime? start,
+    DateTime? end,
+    bool? allDay,
+    int? colorValue,
+    Value<String?> recurrenceJson = const Value.absent(),
+    String? excludedDatesJson,
+    Value<String?> linkedTaskId = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? version,
+  }) => EventRow(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    start: start ?? this.start,
+    end: end ?? this.end,
+    allDay: allDay ?? this.allDay,
+    colorValue: colorValue ?? this.colorValue,
+    recurrenceJson: recurrenceJson.present
+        ? recurrenceJson.value
+        : this.recurrenceJson,
+    excludedDatesJson: excludedDatesJson ?? this.excludedDatesJson,
+    linkedTaskId: linkedTaskId.present ? linkedTaskId.value : this.linkedTaskId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    version: version ?? this.version,
+  );
+  EventRow copyWithCompanion(EventsCompanion data) {
+    return EventRow(
+      id: data.id.present ? data.id.value : this.id,
+      title: data.title.present ? data.title.value : this.title,
+      start: data.start.present ? data.start.value : this.start,
+      end: data.end.present ? data.end.value : this.end,
+      allDay: data.allDay.present ? data.allDay.value : this.allDay,
+      colorValue: data.colorValue.present
+          ? data.colorValue.value
+          : this.colorValue,
+      recurrenceJson: data.recurrenceJson.present
+          ? data.recurrenceJson.value
+          : this.recurrenceJson,
+      excludedDatesJson: data.excludedDatesJson.present
+          ? data.excludedDatesJson.value
+          : this.excludedDatesJson,
+      linkedTaskId: data.linkedTaskId.present
+          ? data.linkedTaskId.value
+          : this.linkedTaskId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      version: data.version.present ? data.version.value : this.version,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EventRow(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('start: $start, ')
+          ..write('end: $end, ')
+          ..write('allDay: $allDay, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('recurrenceJson: $recurrenceJson, ')
+          ..write('excludedDatesJson: $excludedDatesJson, ')
+          ..write('linkedTaskId: $linkedTaskId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    title,
+    start,
+    end,
+    allDay,
+    colorValue,
+    recurrenceJson,
+    excludedDatesJson,
+    linkedTaskId,
+    createdAt,
+    updatedAt,
+    version,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EventRow &&
+          other.id == this.id &&
+          other.title == this.title &&
+          other.start == this.start &&
+          other.end == this.end &&
+          other.allDay == this.allDay &&
+          other.colorValue == this.colorValue &&
+          other.recurrenceJson == this.recurrenceJson &&
+          other.excludedDatesJson == this.excludedDatesJson &&
+          other.linkedTaskId == this.linkedTaskId &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.version == this.version);
+}
+
+class EventsCompanion extends UpdateCompanion<EventRow> {
+  final Value<String> id;
+  final Value<String> title;
+  final Value<DateTime> start;
+  final Value<DateTime> end;
+  final Value<bool> allDay;
+  final Value<int> colorValue;
+  final Value<String?> recurrenceJson;
+  final Value<String> excludedDatesJson;
+  final Value<String?> linkedTaskId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> version;
+  final Value<int> rowid;
+  const EventsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.start = const Value.absent(),
+    this.end = const Value.absent(),
+    this.allDay = const Value.absent(),
+    this.colorValue = const Value.absent(),
+    this.recurrenceJson = const Value.absent(),
+    this.excludedDatesJson = const Value.absent(),
+    this.linkedTaskId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.version = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EventsCompanion.insert({
+    required String id,
+    required String title,
+    required DateTime start,
+    required DateTime end,
+    this.allDay = const Value.absent(),
+    required int colorValue,
+    this.recurrenceJson = const Value.absent(),
+    this.excludedDatesJson = const Value.absent(),
+    this.linkedTaskId = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.version = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       title = Value(title),
+       start = Value(start),
+       end = Value(end),
+       colorValue = Value(colorValue),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<EventRow> custom({
+    Expression<String>? id,
+    Expression<String>? title,
+    Expression<DateTime>? start,
+    Expression<DateTime>? end,
+    Expression<bool>? allDay,
+    Expression<int>? colorValue,
+    Expression<String>? recurrenceJson,
+    Expression<String>? excludedDatesJson,
+    Expression<String>? linkedTaskId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? version,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (title != null) 'title': title,
+      if (start != null) 'start': start,
+      if (end != null) 'end': end,
+      if (allDay != null) 'all_day': allDay,
+      if (colorValue != null) 'color_value': colorValue,
+      if (recurrenceJson != null) 'recurrence_json': recurrenceJson,
+      if (excludedDatesJson != null) 'excluded_dates_json': excludedDatesJson,
+      if (linkedTaskId != null) 'linked_task_id': linkedTaskId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (version != null) 'version': version,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EventsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? title,
+    Value<DateTime>? start,
+    Value<DateTime>? end,
+    Value<bool>? allDay,
+    Value<int>? colorValue,
+    Value<String?>? recurrenceJson,
+    Value<String>? excludedDatesJson,
+    Value<String?>? linkedTaskId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? version,
+    Value<int>? rowid,
+  }) {
+    return EventsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      start: start ?? this.start,
+      end: end ?? this.end,
+      allDay: allDay ?? this.allDay,
+      colorValue: colorValue ?? this.colorValue,
+      recurrenceJson: recurrenceJson ?? this.recurrenceJson,
+      excludedDatesJson: excludedDatesJson ?? this.excludedDatesJson,
+      linkedTaskId: linkedTaskId ?? this.linkedTaskId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      version: version ?? this.version,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (start.present) {
+      map['start'] = Variable<DateTime>(start.value);
+    }
+    if (end.present) {
+      map['end'] = Variable<DateTime>(end.value);
+    }
+    if (allDay.present) {
+      map['all_day'] = Variable<bool>(allDay.value);
+    }
+    if (colorValue.present) {
+      map['color_value'] = Variable<int>(colorValue.value);
+    }
+    if (recurrenceJson.present) {
+      map['recurrence_json'] = Variable<String>(recurrenceJson.value);
+    }
+    if (excludedDatesJson.present) {
+      map['excluded_dates_json'] = Variable<String>(excludedDatesJson.value);
+    }
+    if (linkedTaskId.present) {
+      map['linked_task_id'] = Variable<String>(linkedTaskId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EventsCompanion(')
+          ..write('id: $id, ')
+          ..write('title: $title, ')
+          ..write('start: $start, ')
+          ..write('end: $end, ')
+          ..write('allDay: $allDay, ')
+          ..write('colorValue: $colorValue, ')
+          ..write('recurrenceJson: $recurrenceJson, ')
+          ..write('excludedDatesJson: $excludedDatesJson, ')
+          ..write('linkedTaskId: $linkedTaskId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('version: $version, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1540,6 +2260,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PendingMutationsTable pendingMutations = $PendingMutationsTable(
     this,
   );
+  late final $EventsTable events = $EventsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1548,6 +2269,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tasks,
     subtasks,
     pendingMutations,
+    events,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2549,6 +3271,341 @@ typedef $$PendingMutationsTableProcessedTableManager =
       PendingMutation,
       PrefetchHooks Function()
     >;
+typedef $$EventsTableCreateCompanionBuilder =
+    EventsCompanion Function({
+      required String id,
+      required String title,
+      required DateTime start,
+      required DateTime end,
+      Value<bool> allDay,
+      required int colorValue,
+      Value<String?> recurrenceJson,
+      Value<String> excludedDatesJson,
+      Value<String?> linkedTaskId,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> version,
+      Value<int> rowid,
+    });
+typedef $$EventsTableUpdateCompanionBuilder =
+    EventsCompanion Function({
+      Value<String> id,
+      Value<String> title,
+      Value<DateTime> start,
+      Value<DateTime> end,
+      Value<bool> allDay,
+      Value<int> colorValue,
+      Value<String?> recurrenceJson,
+      Value<String> excludedDatesJson,
+      Value<String?> linkedTaskId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> version,
+      Value<int> rowid,
+    });
+
+class $$EventsTableFilterComposer
+    extends Composer<_$AppDatabase, $EventsTable> {
+  $$EventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get start => $composableBuilder(
+    column: $table.start,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get end => $composableBuilder(
+    column: $table.end,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get allDay => $composableBuilder(
+    column: $table.allDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceJson => $composableBuilder(
+    column: $table.recurrenceJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get excludedDatesJson => $composableBuilder(
+    column: $table.excludedDatesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedTaskId => $composableBuilder(
+    column: $table.linkedTaskId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EventsTable> {
+  $$EventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get start => $composableBuilder(
+    column: $table.start,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get end => $composableBuilder(
+    column: $table.end,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get allDay => $composableBuilder(
+    column: $table.allDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceJson => $composableBuilder(
+    column: $table.recurrenceJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get excludedDatesJson => $composableBuilder(
+    column: $table.excludedDatesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedTaskId => $composableBuilder(
+    column: $table.linkedTaskId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EventsTable> {
+  $$EventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get start =>
+      $composableBuilder(column: $table.start, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get end =>
+      $composableBuilder(column: $table.end, builder: (column) => column);
+
+  GeneratedColumn<bool> get allDay =>
+      $composableBuilder(column: $table.allDay, builder: (column) => column);
+
+  GeneratedColumn<int> get colorValue => $composableBuilder(
+    column: $table.colorValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recurrenceJson => $composableBuilder(
+    column: $table.recurrenceJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get excludedDatesJson => $composableBuilder(
+    column: $table.excludedDatesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linkedTaskId => $composableBuilder(
+    column: $table.linkedTaskId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+}
+
+class $$EventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EventsTable,
+          EventRow,
+          $$EventsTableFilterComposer,
+          $$EventsTableOrderingComposer,
+          $$EventsTableAnnotationComposer,
+          $$EventsTableCreateCompanionBuilder,
+          $$EventsTableUpdateCompanionBuilder,
+          (EventRow, BaseReferences<_$AppDatabase, $EventsTable, EventRow>),
+          EventRow,
+          PrefetchHooks Function()
+        > {
+  $$EventsTableTableManager(_$AppDatabase db, $EventsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<DateTime> start = const Value.absent(),
+                Value<DateTime> end = const Value.absent(),
+                Value<bool> allDay = const Value.absent(),
+                Value<int> colorValue = const Value.absent(),
+                Value<String?> recurrenceJson = const Value.absent(),
+                Value<String> excludedDatesJson = const Value.absent(),
+                Value<String?> linkedTaskId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventsCompanion(
+                id: id,
+                title: title,
+                start: start,
+                end: end,
+                allDay: allDay,
+                colorValue: colorValue,
+                recurrenceJson: recurrenceJson,
+                excludedDatesJson: excludedDatesJson,
+                linkedTaskId: linkedTaskId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                version: version,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String title,
+                required DateTime start,
+                required DateTime end,
+                Value<bool> allDay = const Value.absent(),
+                required int colorValue,
+                Value<String?> recurrenceJson = const Value.absent(),
+                Value<String> excludedDatesJson = const Value.absent(),
+                Value<String?> linkedTaskId = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> version = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventsCompanion.insert(
+                id: id,
+                title: title,
+                start: start,
+                end: end,
+                allDay: allDay,
+                colorValue: colorValue,
+                recurrenceJson: recurrenceJson,
+                excludedDatesJson: excludedDatesJson,
+                linkedTaskId: linkedTaskId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                version: version,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EventsTable,
+      EventRow,
+      $$EventsTableFilterComposer,
+      $$EventsTableOrderingComposer,
+      $$EventsTableAnnotationComposer,
+      $$EventsTableCreateCompanionBuilder,
+      $$EventsTableUpdateCompanionBuilder,
+      (EventRow, BaseReferences<_$AppDatabase, $EventsTable, EventRow>),
+      EventRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2559,4 +3616,6 @@ class $AppDatabaseManager {
       $$SubtasksTableTableManager(_db, _db.subtasks);
   $$PendingMutationsTableTableManager get pendingMutations =>
       $$PendingMutationsTableTableManager(_db, _db.pendingMutations);
+  $$EventsTableTableManager get events =>
+      $$EventsTableTableManager(_db, _db.events);
 }
