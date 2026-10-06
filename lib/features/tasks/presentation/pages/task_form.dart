@@ -6,7 +6,7 @@ import 'package:daybook/features/tasks/domain/entities/task.dart';
 import 'package:daybook/features/tasks/domain/services/task_validator.dart';
 import 'package:daybook/features/tasks/presentation/bloc/tasks_bloc.dart';
 import 'package:daybook/features/tasks/presentation/bloc/tasks_event.dart';
-import 'package:daybook/features/tasks/presentation/widgets/recurrence_picker.dart';
+import 'package:daybook/shared/widgets/recurrence_picker.dart';
 import 'package:daybook/features/tasks/presentation/widgets/task_labels.dart';
 import 'package:daybook/shared/models/recurrence_rule.dart';
 import 'package:daybook/shared/widgets/app_button.dart';

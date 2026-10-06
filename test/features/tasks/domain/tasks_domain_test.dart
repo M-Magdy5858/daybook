@@ -1,7 +1,7 @@
 import 'package:daybook/features/tasks/data/repositories/in_memory_task_repository.dart';
 import 'package:daybook/features/tasks/domain/entities/priority.dart';
 import 'package:daybook/features/tasks/domain/entities/task.dart';
-import 'package:daybook/features/tasks/domain/services/recurrence_calculator.dart';
+import 'package:daybook/shared/services/recurrence_calculator.dart';
 import 'package:daybook/features/tasks/domain/services/task_query.dart';
 import 'package:daybook/features/tasks/domain/usecases/complete_task.dart';
 import 'package:daybook/shared/models/recurrence_rule.dart';

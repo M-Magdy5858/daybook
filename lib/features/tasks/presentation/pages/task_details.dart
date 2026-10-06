@@ -6,6 +6,7 @@ import 'package:daybook/features/tasks/presentation/bloc/tasks_event.dart';
 import 'package:daybook/features/tasks/presentation/bloc/tasks_state.dart';
 import 'package:daybook/features/tasks/presentation/widgets/task_labels.dart';
 import 'package:daybook/shared/extensions/context_extensions.dart';
+import 'package:daybook/shared/widgets/recurrence_picker.dart';
 import 'package:daybook/shared/widgets/app_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

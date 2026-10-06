@@ -1,7 +1,7 @@
 import 'package:daybook/core/utils/result.dart';
 import 'package:daybook/features/tasks/domain/entities/task.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
-import 'package:daybook/features/tasks/domain/services/recurrence_calculator.dart';
+import 'package:daybook/shared/services/recurrence_calculator.dart';
 
 /// Toggles a task done/not done. Completing a recurring task also creates its
 /// next occurrence.

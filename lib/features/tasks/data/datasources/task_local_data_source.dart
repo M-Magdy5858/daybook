@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:daybook/core/storage/app_database.dart';
-import 'package:daybook/features/tasks/data/models/recurrence_json.dart';
+import 'package:daybook/shared/models/recurrence_json.dart';
 import 'package:daybook/features/tasks/domain/entities/priority.dart';
 import 'package:daybook/features/tasks/domain/entities/subtask.dart';
 import 'package:daybook/features/tasks/domain/entities/task.dart';
