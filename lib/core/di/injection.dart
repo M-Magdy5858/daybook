@@ -1,5 +1,10 @@
+import 'package:daybook/core/config/environment.dart';
 import 'package:daybook/core/network/api_client.dart';
 import 'package:daybook/core/network/logging_interceptor.dart';
+import 'package:daybook/core/network/mock/mock_api_adapter.dart';
+import 'package:daybook/core/network/mock/mock_server_state.dart';
+import 'package:daybook/core/network/mock/mock_settings.dart';
+import 'package:daybook/core/network/mock/routes/auth_routes.dart';
 import 'package:daybook/core/routing/app_router.dart';
 import 'package:daybook/features/auth/domain/reposatory/auth_repository.dart';
 import 'package:daybook/features/auth/domain/reposatory/fake_auth_repository.dart';
@@ -21,18 +26,23 @@ Future<void> configureDependencies({bool testing = false}) async {
 
 void _registerCore() {
   getIt
+    ..registerLazySingleton<MockSettings>(MockSettings.new)
+    ..registerLazySingleton<MockServerState>(MockServerState.new)
     ..registerLazySingleton<Dio>(() {
+      final isMock = Environment.current == Environment.mock;
       final dio = Dio(
         BaseOptions(
-          baseUrl: const String.fromEnvironment(
-            'API_URL',
-            defaultValue: 'https://api.daybook.dev',
-          ),
+          baseUrl: isMock ? Environment.mockBaseUrl : Environment.realBaseUrl,
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 15),
           contentType: 'application/json',
         ),
       );
+      if (isMock) {
+        dio.httpClientAdapter = MockApiAdapter(getIt(), {
+          ...AuthRoutes(getIt()).routes,
+        });
+      }
       if (kDebugMode) dio.interceptors.add(LoggingInterceptor());
       return dio;
     })

@@ -1,3 +1,4 @@
+import 'package:daybook/core/theme/app_spacing.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -15,12 +16,19 @@ class MorePage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('More Page'),
-            if (kDebugMode)
+            if (kDebugMode) ...[
               TextButton.icon(
                 onPressed: () => context.go(Routes.gallery),
                 icon: const Icon(Icons.widgets_outlined),
                 label: const Text('Widget gallery'),
               ),
+              const SizedBox(height: AppSpacing.sm),
+              TextButton.icon(
+                onPressed: () => context.go(Routes.devTools),
+                icon: const Icon(Icons.developer_mode),
+                label: const Text('Dev Tools'),
+              ),
+            ],
           ],
         ),
       ),

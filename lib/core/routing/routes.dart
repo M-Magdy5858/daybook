@@ -12,7 +12,10 @@ abstract final class Routes {
   static const calendar = '/calendar';
   static const eventNew = '/calendar/new';
   static String eventNewFor({required String taskId, required String title}) =>
-      Uri(path: eventNew, queryParameters: {'taskId': taskId, 'title': title}).toString();
+      Uri(
+        path: eventNew,
+        queryParameters: {'taskId': taskId, 'title': title},
+      ).toString();
   static String eventDetail(String id) => '/calendar/events/$id';
 
   static const habits = '/habits';
@@ -31,4 +34,6 @@ abstract final class Routes {
 
   static const search = '/search';
   static const authRoutes = {login, register};
+
+  static const devTools = '/more/dev';
 }

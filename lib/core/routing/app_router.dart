@@ -1,3 +1,5 @@
+import 'package:daybook/core/di/injection.dart';
+import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/routing/app_shell.dart';
 import 'package:daybook/core/routing/routes.dart';
 import 'package:daybook/features/auth/presentation/pages/login.dart';
@@ -6,6 +8,7 @@ import 'package:daybook/features/auth/presentation/pages/splash.dart';
 import 'package:daybook/features/calendar/presentation/pages/calendar.dart';
 import 'package:daybook/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:daybook/features/habits/presentation/pages/habits.dart';
+import 'package:daybook/features/settings/presentation/pages/dev_tools.dart';
 import 'package:daybook/features/settings/presentation/pages/gallery.dart';
 import 'package:daybook/features/settings/presentation/pages/more.dart';
 import 'package:daybook/features/tasks/presentation/pages/tasks.dart';
@@ -64,6 +67,13 @@ GoRouter createAppRouter() => GoRouter(
                     path: 'gallery',
                     parentNavigatorKey: rootNavigationKey,
                     builder: (_, _) => const GalleryPage(),
+                  ),
+                if (kDebugMode)
+                  GoRoute(
+                    path: 'dev',
+                    parentNavigatorKey: rootNavigationKey,
+                    builder: (_, _) =>
+                        DevToolsPage(settings: getIt<MockSettings>()),
                   ),
               ],
             ),
