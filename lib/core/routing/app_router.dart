@@ -1,4 +1,5 @@
 import 'package:daybook/core/di/injection.dart';
+import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/routing/app_shell.dart';
 import 'package:daybook/core/routing/go_router_refresh_stream.dart';
@@ -128,8 +129,10 @@ GoRouter createAppRouter(AuthBloc auth) => GoRouter(
                   GoRoute(
                     path: 'dev',
                     parentNavigatorKey: rootNavigationKey,
-                    builder: (_, _) =>
-                        DevToolsPage(settings: getIt<MockSettings>()),
+                    builder: (_, _) => DevToolsPage(
+                      settings: getIt<MockSettings>(),
+                      server: getIt<MockServerState>(),
+                    ),
                   ),
               ],
             ),

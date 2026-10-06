@@ -1,6 +1,7 @@
 import 'package:daybook/core/config/environment.dart';
 import 'package:daybook/core/network/api_client.dart';
 import 'package:daybook/core/network/auth_interceptor.dart';
+import 'package:daybook/core/network/connectivity_service.dart';
 import 'package:daybook/core/network/logging_interceptor.dart';
 import 'package:daybook/core/network/mock/mock_api_adapter.dart';
 import 'package:daybook/core/network/mock/mock_router.dart';
@@ -9,6 +10,8 @@ import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
 import 'package:daybook/core/network/mock/routes/task_routes.dart';
 import 'package:daybook/core/routing/app_router.dart';
+import 'package:daybook/core/storage/app_database.dart';
+import 'package:daybook/core/storage/outbox.dart';
 import 'package:daybook/core/storage/token_storage.dart';
 import 'package:daybook/core/utils/id.dart';
 import 'package:daybook/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -20,7 +23,12 @@ import 'package:daybook/features/auth/domain/usecases/logout.dart';
 import 'package:daybook/features/auth/domain/usecases/register.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_event.dart';
-import 'package:daybook/features/tasks/data/repositories/in_memory_task_repository.dart';
+import 'package:daybook/features/auth/presentation/bloc/auth_state.dart';
+import 'package:daybook/features/tasks/data/datasources/task_local_data_source.dart';
+import 'package:daybook/features/tasks/data/datasources/task_remote_data_source.dart';
+import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
+import 'package:daybook/features/tasks/data/sync/conflict_resolver.dart';
+import 'package:daybook/features/tasks/data/sync/sync_engine.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
 import 'package:daybook/features/tasks/domain/usecases/complete_task.dart';
 import 'package:daybook/features/tasks/domain/usecases/delete_task.dart';
@@ -52,6 +60,12 @@ void _registerCore() {
       TaskRoutes(getIt()).register(router);
       return router;
     })
+    ..registerLazySingleton<AppDatabase>(
+      AppDatabase.new,
+      dispose: (db) => db.close(),
+    )
+    ..registerLazySingleton<Outbox>(() => Outbox(getIt()))
+    ..registerLazySingleton<ConnectivityService>(ConnectivityPlusService.new)
     ..registerLazySingleton<TokenStorage>(
       () => SecureTokenStorage(const FlutterSecureStorage()),
     )
@@ -92,7 +106,33 @@ void _registerAuth() {
 
 void _registerTasks() {
   getIt
-    ..registerLazySingleton<TaskRepository>(InMemoryTaskRepository.new)
+    ..registerLazySingleton<TaskLocalDataSource>(
+      () => TaskLocalDataSource(getIt()),
+    )
+    ..registerLazySingleton<TaskRemoteDataSource>(
+      () => TaskRemoteDataSource(getIt()),
+    )
+    ..registerLazySingleton<ConflictResolver>(
+      () => ConflictResolver(local: getIt(), remote: getIt()),
+    )
+    ..registerLazySingleton<SyncEngine>(
+      () => SyncEngine(
+        outbox: getIt(),
+        local: getIt(),
+        remote: getIt(),
+        resolver: getIt(),
+        connectivity: getIt(),
+      ),
+      dispose: (engine) => engine.stop(),
+    )
+    ..registerLazySingleton<TaskRepository>(
+      () => TaskRepositoryImpl(
+        db: getIt(),
+        local: getIt(),
+        outbox: getIt(),
+        sync: getIt(),
+      ),
+    )
     ..registerLazySingleton<WatchTasks>(() => WatchTasks(getIt()))
     ..registerLazySingleton<SaveTask>(() => SaveTask(getIt()))
     ..registerLazySingleton<DeleteTask>(() => DeleteTask(getIt()))
@@ -110,6 +150,21 @@ void _registerTasks() {
         refreshTasks: getIt(),
       ),
     );
+}
+
+/// Runs background services only while someone is logged in. Called from
+/// `main()` rather than [configureDependencies], because widget tests have
+/// no connectivity plugin.
+void startSessionServices() {
+  final auth = getIt<AuthBloc>();
+  final sync = getIt<SyncEngine>();
+  void apply(AuthState state) => switch (state) {
+    Authenticated() => sync.start(),
+    Unauthenticated() => sync.stop(),
+    _ => null,
+  };
+  apply(auth.state);
+  auth.stream.listen(apply);
 }
 
 /// A Dio pointed at the mock or real API. Used for the main client and for
