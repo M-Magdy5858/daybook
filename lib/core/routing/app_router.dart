@@ -9,7 +9,9 @@ import 'package:daybook/features/auth/presentation/bloc/auth_state.dart';
 import 'package:daybook/features/auth/presentation/pages/login.dart';
 import 'package:daybook/features/auth/presentation/pages/register.dart';
 import 'package:daybook/features/auth/presentation/pages/splash.dart';
+import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart';
 import 'package:daybook/features/calendar/presentation/pages/calendar.dart';
+import 'package:daybook/features/calendar/presentation/pages/event_form.dart';
 import 'package:daybook/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:daybook/features/habits/presentation/pages/habits.dart';
 import 'package:daybook/features/settings/presentation/pages/dev_tools.dart';
@@ -51,6 +53,16 @@ GoRouter createAppRouter(AuthBloc auth) => GoRouter(
     GoRoute(path: Routes.splash, builder: (_, _) => const SplashPage()),
     GoRoute(path: Routes.login, builder: (_, _) => const LoginPage()),
     GoRoute(path: Routes.register, builder: (_, _) => const RegisterPage()),
+    GoRoute(
+      path: Routes.scheduleTask,
+      builder: (_, s) => BlocProvider(
+        create: (_) => getIt<CalendarCubit>(),
+        child: EventFormPage(
+          taskId: s.uri.queryParameters['taskId'],
+          taskTitle: s.uri.queryParameters['title'],
+        ),
+      ),
+    ),
 
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
@@ -102,9 +114,32 @@ GoRouter createAppRouter(AuthBloc auth) => GoRouter(
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: Routes.calendar,
-              builder: (_, _) => const CalendarPage(),
+            ShellRoute(
+              builder: (_, _, child) => BlocProvider(
+                create: (_) => getIt<CalendarCubit>()..load(),
+                child: child,
+              ),
+              routes: [
+                GoRoute(
+                  path: Routes.calendar,
+                  builder: (_, _) => const CalendarPage(),
+                  routes: [
+                    GoRoute(
+                      path: 'new',
+                      builder: (_, s) => EventFormPage(
+                        initialDate: DateTime.tryParse(
+                          s.uri.queryParameters['date'] ?? '',
+                        ),
+                      ),
+                    ),
+                    GoRoute(
+                      path: 'events/:id',
+                      builder: (_, s) =>
+                          EventFormPage(id: s.pathParameters['id']),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

@@ -31,6 +31,7 @@ import 'package:daybook/features/calendar/data/datasources/event_local_data_sour
 import 'package:daybook/features/calendar/data/repositories/event_repository_impl.dart';
 import 'package:daybook/features/calendar/data/sync/event_sync_store.dart';
 import 'package:daybook/features/calendar/domain/repositories/event_repository.dart';
+import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart';
 import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:daybook/features/tasks/data/sync/task_sync_store.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
@@ -161,14 +162,19 @@ void _registerTasks() {
 }
 
 void _registerCalendar() {
-  getIt.registerLazySingleton<EventRepository>(
-    () => EventRepositoryImpl(
-      db: getIt(),
-      local: getIt(),
-      outbox: getIt(),
-      sync: getIt(),
-    ),
-  );
+  getIt
+    ..registerLazySingleton<EventRepository>(
+      () => EventRepositoryImpl(
+        db: getIt(),
+        local: getIt(),
+        outbox: getIt(),
+        sync: getIt(),
+      ),
+    )
+    // A fresh Cubit each time the Calendar tab is built.
+    ..registerFactory<CalendarCubit>(
+      () => CalendarCubit(getIt(), newId: newId),
+    );
 }
 
 /// Runs background services only while someone is logged in. Called from

@@ -11,11 +11,19 @@ abstract final class Routes {
 
   static const calendar = '/calendar';
   static const eventNew = '/calendar/new';
+
+  /// Full screen above the tabs, so it can be pushed from a task and Back
+  /// returns there.
+  static const scheduleTask = '/schedule';
   static String eventNewFor({required String taskId, required String title}) =>
       Uri(
-        path: eventNew,
+        path: scheduleTask,
         queryParameters: {'taskId': taskId, 'title': title},
       ).toString();
+  static String eventNewOn(DateTime date) => Uri(
+    path: eventNew,
+    queryParameters: {'date': date.toIso8601String()},
+  ).toString();
   static String eventDetail(String id) => '/calendar/events/$id';
 
   static const habits = '/habits';

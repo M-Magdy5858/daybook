@@ -39,6 +39,13 @@ class TaskDetailsPage extends StatelessWidget {
       appBar: AppBar(
         actions: [
           IconButton(
+            tooltip: 'Schedule on calendar',
+            icon: const Icon(Icons.event_available_outlined),
+            onPressed: () => context.push(
+              Routes.eventNewFor(taskId: task.id, title: task.title),
+            ),
+          ),
+          IconButton(
             tooltip: 'Edit task',
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => context.push(Routes.taskEdit(id)),
