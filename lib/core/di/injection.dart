@@ -6,8 +6,9 @@ import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
 import 'package:daybook/core/routing/app_router.dart';
+import 'package:daybook/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:daybook/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:daybook/features/auth/domain/reposatory/auth_repository.dart';
-import 'package:daybook/features/auth/domain/reposatory/fake_auth_repository.dart';
 import 'package:daybook/features/auth/domain/usecases/login.dart';
 import 'package:daybook/features/auth/domain/usecases/register.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
@@ -52,7 +53,10 @@ void _registerCore() {
 
 void _registerAuth() {
   getIt
-    ..registerLazySingleton<AuthRepository>(FakeAuthRepository.new)
+    ..registerLazySingleton<AuthRemoteDataSource>(
+      () => AuthRemoteDataSource(getIt()),
+    )
+    ..registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(getIt()))
     ..registerLazySingleton<Login>(() => Login(getIt()));
 
   getIt
