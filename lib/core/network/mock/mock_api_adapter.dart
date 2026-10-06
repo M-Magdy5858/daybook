@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:daybook/core/network/mock/mock_response.dart';
+import 'package:daybook/core/network/mock/mock_router.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:dio/dio.dart';
 
 class MockApiAdapter implements HttpClientAdapter {
-  MockApiAdapter(this._settings, this._routes);
+  MockApiAdapter(this._settings, this._router);
   final MockSettings _settings;
-  final Map<String, MockHandler> _routes;
+  final MockRouter _router;
 
   @override
   Future<ResponseBody> fetch(
@@ -17,6 +18,13 @@ class MockApiAdapter implements HttpClientAdapter {
     Future<void>? _,
   ) async {
     await Future<void>.delayed(_settings.latency);
+
+    if (_settings.offline) {
+      throw DioException.connectionError(
+        requestOptions: options,
+        reason: 'Simulated offline',
+      );
+    }
 
     final response = switch (_settings.forcedError) {
       ForcedError.offline => throw DioException.connectionError(
@@ -53,12 +61,12 @@ class MockApiAdapter implements HttpClientAdapter {
   }
 
   Future<MockResponse> _handle(RequestOptions options) async {
-    final handler = _routes['${options.method} ${options.path}'];
-    if (handler == null) {
+    final response = _router.handle(options);
+    if (response == null) {
       return const MockResponse(404, {'message': 'No such route'});
     }
     try {
-      return await handler(options);
+      return await response;
     } catch (e) {
       // A bug in a mock handler should read as a server error, not a
       // network failure.

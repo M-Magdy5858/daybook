@@ -1,5 +1,6 @@
 import 'package:daybook/core/network/mock/fake_jwt.dart';
 import 'package:daybook/core/network/mock/mock_response.dart';
+import 'package:daybook/core/network/mock/mock_router.dart';
 import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:dio/dio.dart';
 
@@ -7,13 +8,12 @@ class AuthRoutes {
   AuthRoutes(this._state);
   final MockServerState _state;
 
-  Map<String, MockHandler> get routes => {
-    'POST /auth/login': _login,
-    'POST /auth/register': _register,
-    'GET /auth/me': _me,
-    'POST /auth/refresh': _refresh,
-    'POST /auth/logout': _logout,
-  };
+  void register(MockRouter router) => router
+    ..on('POST', '/auth/login', (req, _) => _login(req))
+    ..on('POST', '/auth/register', (req, _) => _register(req))
+    ..on('GET', '/auth/me', (req, _) => _me(req))
+    ..on('POST', '/auth/refresh', (req, _) => _refresh(req))
+    ..on('POST', '/auth/logout', (req, _) => _logout(req));
 
   Future<MockResponse> _login(RequestOptions req) async {
     final body = req.data as Map<String, dynamic>;

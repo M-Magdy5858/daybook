@@ -3,9 +3,11 @@ import 'package:daybook/core/network/api_client.dart';
 import 'package:daybook/core/network/auth_interceptor.dart';
 import 'package:daybook/core/network/logging_interceptor.dart';
 import 'package:daybook/core/network/mock/mock_api_adapter.dart';
+import 'package:daybook/core/network/mock/mock_router.dart';
 import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
+import 'package:daybook/core/network/mock/routes/task_routes.dart';
 import 'package:daybook/core/routing/app_router.dart';
 import 'package:daybook/core/storage/token_storage.dart';
 import 'package:daybook/core/utils/id.dart';
@@ -44,6 +46,12 @@ void _registerCore() {
   getIt
     ..registerLazySingleton<MockSettings>(MockSettings.new)
     ..registerLazySingleton<MockServerState>(MockServerState.new)
+    ..registerLazySingleton<MockRouter>(() {
+      final router = MockRouter();
+      AuthRoutes(getIt()).register(router);
+      TaskRoutes(getIt()).register(router);
+      return router;
+    })
     ..registerLazySingleton<TokenStorage>(
       () => SecureTokenStorage(const FlutterSecureStorage()),
     )
@@ -117,9 +125,7 @@ Dio _buildDio() {
     ),
   );
   if (isMock) {
-    dio.httpClientAdapter = MockApiAdapter(getIt(), {
-      ...AuthRoutes(getIt()).routes,
-    });
+    dio.httpClientAdapter = MockApiAdapter(getIt(), getIt());
   }
   if (kDebugMode) dio.interceptors.add(LoggingInterceptor());
   return dio;
