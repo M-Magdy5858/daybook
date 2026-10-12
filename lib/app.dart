@@ -1,4 +1,5 @@
 import 'package:daybook/core/di/injection.dart';
+import 'package:daybook/core/notifications/notification_service.dart';
 import 'package:daybook/core/theme/app_theme.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter/material.dart';
@@ -11,12 +12,20 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<AuthBloc>(),
-      child: MaterialApp.router(
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        routerConfig: getIt<GoRouter>(),
+    return MultiRepositoryProvider(
+      providers: [
+        // Forms ask for notification permission at the right moment.
+        RepositoryProvider<NotificationService>.value(
+          value: getIt<NotificationService>(),
+        ),
+      ],
+      child: BlocProvider.value(
+        value: getIt<AuthBloc>(),
+        child: MaterialApp.router(
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          routerConfig: getIt<GoRouter>(),
+        ),
       ),
     );
   }

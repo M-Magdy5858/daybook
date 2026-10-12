@@ -1,3 +1,4 @@
+import 'package:daybook/core/notifications/notification_service.dart';
 import 'package:daybook/core/routing/routes.dart';
 import 'package:daybook/core/theme/app_colors.dart';
 import 'package:daybook/core/theme/app_spacing.dart';
@@ -143,6 +144,10 @@ class _EventFormPageState extends State<EventFormPage> {
           createdAt: DateTime.now(),
           linkedTaskId: _taskId,
         );
+    if (!_allDay) {
+      // Timed events get a reminder; ask now, when that makes sense.
+      context.read<NotificationService>().requestPermission();
+    }
     context.read<CalendarCubit>().saveEvent(
       base.copyWith(
         title: _title.text.trim(),

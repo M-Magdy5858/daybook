@@ -1,6 +1,6 @@
 # Daybook
 
-Daybook is a personal organizer built with Flutter: **tasks**, a **calendar**, and (soon) habits, expenses and more.
+Daybook is a personal organizer built with Flutter: **tasks**, a **calendar** and **reminders**, with habits, expenses and more on the way.
 
 It's also a learning project. Every part was built one small step at a time, so the code doubles as a reference for how a real Flutter app fits together. This README explains the architecture in plain words and lists every Flutter and Dart concept used, with a link to where you can see it in the code.
 
@@ -26,6 +26,8 @@ It's also a learning project. Every part was built one small step at a time, so 
 | **Tasks** | Create, edit, complete, delete (with Undo) and reorder tasks. Subtasks, due dates, priorities and repeating tasks. Search, filter and sort. |
 | **Offline** | Tasks and events work with no internet. Changes wait in a queue and sync when you're back online. |
 | **Calendar** | Month, week, day and agenda views. Repeating events. Drag an event to a new time. Turn a task into an event. |
+| **Reminders** | A notification when a task is due and 15 minutes before an event, even with the app closed. Tapping it opens that task or event. |
+| **Deep links** | Links like `daybook://task/123` open the app on that task, and they wait for you to log in first if needed. |
 | **Developer tools** | (Debug builds) Slow the server down, make it fail on purpose, go "offline", or edit a task "on another device". |
 
 There is **no real backend yet**. The app talks to a fake server that lives inside the app (see [Mock API](#4-the-mock-api)), so requests, status codes and JSON are all real.
@@ -49,6 +51,13 @@ Log in with the demo account: **demo@daybook.dev** / **password123** (debug buil
 | `flutter run --dart-define=ENV=real --dart-define=API_URL=https://...` | Use a real API instead of the mock |
 
 Debug builds use the mock server by default and release builds use the real API. `ENV` overrides that.
+
+**Try a deep link** while the app is installed on a simulator or emulator:
+
+```bash
+xcrun simctl openurl booted daybook://task/seed-3                              # iOS
+adb shell am start -a android.intent.action.VIEW -d "daybook://task/seed-3"    # Android
+```
 
 ---
 
@@ -97,7 +106,8 @@ lib/
 │   ├── di/            Dependency injection (who creates what)
 │   ├── error/         Exceptions, Failures, and the mapper between them
 │   ├── network/       ApiClient, interceptors, and the mock server
-│   ├── routing/       All routes, the tab shell, the login redirect
+│   ├── notifications/ Local notifications and the reminder scheduler
+│   ├── routing/       All routes, the tab shell, the login redirect, deep links
 │   ├── storage/       The SQLite database, secure token storage, the outbox
 │   ├── sync/          The engine that syncs local changes with the server
 │   ├── theme/         Colors, spacing, radius, text styles
@@ -209,6 +219,27 @@ This is the heart of Tasks and Calendar:
 
 Each kind of item (task, event) plugs into the same engine through a small [`SyncStore`](lib/core/sync/sync_store.dart).
 
+### 7. Reminders and deep links
+
+**Reminders are local notifications**: the app schedules them on the phone itself, with no server involved.
+
+1. Each feature says which reminders it wants: [`taskReminders`](lib/features/tasks/presentation/task_reminders.dart) (at the due time) and [`eventReminders`](lib/features/calendar/presentation/event_reminders.dart) (15 minutes before the next occurrence).
+2. The [`ReminderScheduler`](lib/core/notifications/reminder_scheduler.dart) watches tasks and events. When something changes it schedules new reminders, reschedules changed ones and cancels old ones, so you never have to remember to cancel by hand.
+3. [`NotificationService`](lib/core/notifications/notification_service.dart) wraps the plugin. Permission is asked the first time you set a due time, not when the app opens, so the request makes sense.
+
+**Every notification carries a deep link** like `daybook://task/123`. That way a tapped notification and a link from outside the app take the same path:
+
+```mermaid
+flowchart LR
+    N["Notification tapped"] --> L["daybook://task/123"]
+    U["Link opened"] --> L
+    L --> R{"Router redirect"}
+    R -- logged in --> T["/tasks/123"]
+    R -- not yet --> Login --> T
+```
+
+[`DeepLinks.parse`](lib/core/routing/deep_link_parser.dart) turns the link into a route. If you aren't logged in yet, the router's [`AppRedirect`](lib/core/routing/app_router.dart) remembers where you were going and takes you there right after login. This also covers the app starting from closed, while it's still checking your session.
+
 ---
 
 ## Concepts learned and where to find them
@@ -297,6 +328,23 @@ Each row: the concept in one line, and a file where you can see it in action.
 | Path and query parameters | `/tasks/:id`, `?date=...` | [`app_router.dart`](lib/core/routing/app_router.dart) |
 | `go` vs `push` | Replace the stack vs add on top (Back returns) | [`task_card.dart`](lib/features/tasks/presentation/widgets/task_card.dart), [`event_form.dart`](lib/features/calendar/presentation/pages/event_form.dart) |
 | `redirect` + `refreshListenable` | Guard routes and re-check when login changes | [`app_router.dart`](lib/core/routing/app_router.dart), [`go_router_refresh_stream.dart`](lib/core/routing/go_router_refresh_stream.dart) |
+| Deep links | A URL like `daybook://task/1` opens a screen | [`deep_link_parser.dart`](lib/core/routing/deep_link_parser.dart) |
+| Remembering where the user was going | Open the link after login, once | [`app_router.dart`](lib/core/routing/app_router.dart) (`AppRedirect`) |
+
+### Notifications and the device
+
+| Concept | In one line | See it in |
+| --- | --- | --- |
+| Local notifications | The app schedules alerts on the phone | [`notification_service.dart`](lib/core/notifications/notification_service.dart) |
+| Time zones | Schedule in the phone's own zone so 9:00 means 9:00 | [`notification_service.dart`](lib/core/notifications/notification_service.dart) (`timezone`, `flutter_timezone`) |
+| Notification channels | Android categories users can mute separately (Tasks, Events) | [`reminder.dart`](lib/core/notifications/reminder.dart) |
+| Asking for permission at the right moment | Ask when the user sets a due time, not at launch | [`task_form.dart`](lib/features/tasks/presentation/pages/task_form.dart) |
+| Three app states for a tap | Open, in the background, or closed (cold start) | [`main.dart`](lib/main.dart) |
+| Keeping data and alerts in step | Watch the data; schedule, reschedule or cancel to match | [`reminder_scheduler.dart`](lib/core/notifications/reminder_scheduler.dart) |
+| Stable ids | The same item always gets the same notification id, so it can be cancelled | [`reminder.dart`](lib/core/notifications/reminder.dart) (`notificationIdFor`) |
+| `AppLifecycleListener` | Run code when the app comes back to the foreground | [`injection.dart`](lib/core/di/injection.dart) |
+| `RepositoryProvider` | Make a service available to widgets below | [`app.dart`](lib/app.dart) |
+| Platform setup | URL scheme, permissions and receivers in the native projects | [`AndroidManifest.xml`](android/app/src/main/AndroidManifest.xml), [`Info.plist`](ios/Runner/Info.plist), [`AppDelegate.swift`](ios/Runner/AppDelegate.swift) |
 
 ### Networking
 
@@ -334,6 +382,8 @@ Each row: the concept in one line, and a file where you can see it in action.
 | `json_serializable` | Generates `fromJson` / `toJson` | [`task_model.dart`](lib/features/tasks/data/models/task_model.dart) + `.g.dart` |
 | `drift_dev` | Generates database code | [`app_database.dart`](lib/core/storage/app_database.dart) + `.g.dart` |
 | `build_runner` | Runs the generators | see [Run it](#run-it) |
+| Pinning a version | Stop a package updating when two packages clash | [`pubspec.yaml`](pubspec.yaml) (`connectivity_plus`) |
+| Core library desugaring | Let newer Java APIs run on old Androids | [`build.gradle.kts`](android/app/build.gradle.kts) |
 
 ---
 
@@ -351,6 +401,8 @@ flutter test
 | **Network** | Errors map correctly; refresh runs once | [`auth_interceptor_test.dart`](test/core/network/auth_interceptor_test.dart) |
 | **Database** | Queries, streams and cascades work | [`app_database_test.dart`](test/core/storage/app_database_test.dart) (in-memory SQLite) |
 | **Sync, end to end** | Offline edits arrive in order; conflicts resolve | [`sync_engine_test.dart`](test/core/sync/sync_engine_test.dart) (real engine + mock server) |
+| **Reminders** | Scheduled once, rescheduled on edit, cancelled when done | [`reminder_scheduler_test.dart`](test/core/notifications/reminder_scheduler_test.dart) (fake notification service) |
+| **Deep links** | Links map to routes; a link waits for login | [`deep_links_test.dart`](test/core/routing/deep_links_test.dart) |
 | **App flow** | Log in and land on the Dashboard | [`widget_test.dart`](test/widget_test.dart) |
 
 Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `NativeDatabase.memory()`.
@@ -365,7 +417,7 @@ Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `
 | 1. Foundations: routing, errors, theme, DI | ✅ Done |
 | 2. Authentication: login, mock API, sessions | ✅ Done |
 | 3. Tasks: domain, screens, server, database, offline sync | ✅ Done |
-| 4. More features: **calendar** ✅, reminders, habits, expenses, dashboard, settings & Arabic | 🚧 In progress |
+| 4. More features: **calendar** ✅, **reminders & deep links** ✅, habits, expenses, dashboard, settings & Arabic | 🚧 In progress |
 | 5. Device & real-time: attachments, receipt scanning, chat, push, maps, search | ⏳ |
 | 6. Platform & polish: native code, tablets/desktop, accessibility, background sync, performance | ⏳ |
 | 7. Ship it: end-to-end tests, CI, signed release | ⏳ |
@@ -374,4 +426,6 @@ Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `
 
 - The mock server keeps its data in memory, so it resets when the app restarts (your local database doesn't).
 - Items deleted on the server aren't removed locally yet.
-- Logging out doesn't clear the local database.
+- Logging out doesn't clear the local database (it does cancel all reminders).
+- Only the soonest 50 reminders are scheduled at a time, because iOS allows at most 64 waiting notifications.
+- A repeating event gets a reminder for its next occurrence only; the one after is scheduled when you next open the app.

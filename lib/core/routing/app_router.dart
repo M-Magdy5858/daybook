@@ -2,6 +2,7 @@ import 'package:daybook/core/di/injection.dart';
 import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/routing/app_shell.dart';
+import 'package:daybook/core/routing/deep_link_parser.dart';
 import 'package:daybook/core/routing/go_router_refresh_stream.dart';
 import 'package:daybook/core/routing/routes.dart';
 import 'package:daybook/features/auth/presentation/bloc/auth_bloc.dart';
@@ -44,136 +45,171 @@ String? authRedirect(AuthState auth, String location) {
   };
 }
 
-GoRouter createAppRouter(AuthBloc auth) => GoRouter(
-  navigatorKey: rootNavigationKey,
-  initialLocation: Routes.splash,
-  refreshListenable: GoRouterRefreshStream(auth.stream),
-  redirect: (_, state) => authRedirect(auth.state, state.matchedLocation),
-  routes: [
-    GoRoute(path: Routes.splash, builder: (_, _) => const SplashPage()),
-    GoRoute(path: Routes.login, builder: (_, _) => const LoginPage()),
-    GoRoute(path: Routes.register, builder: (_, _) => const RegisterPage()),
-    GoRoute(
-      path: Routes.scheduleTask,
-      builder: (_, s) => BlocProvider(
-        create: (_) => getIt<CalendarCubit>(),
-        child: EventFormPage(
-          taskId: s.uri.queryParameters['taskId'],
-          taskTitle: s.uri.queryParameters['title'],
+/// [authRedirect] plus deep links: `daybook://` links become app routes, and
+/// a link opened before the session check finishes, or while logged out, is
+/// remembered and opened right after login.
+class AppRedirect {
+  String? _pending;
+
+  String? call(AuthState auth, Uri uri, String matchedLocation) {
+    final link = DeepLinks.parse(uri);
+    final location = link ?? matchedLocation;
+    final target = authRedirect(auth, location);
+    final isAppPage =
+        location != Routes.splash && !Routes.authRoutes.contains(location);
+
+    // Remember where the user was headed, but only for links and app start:
+    // after a normal logout, the next login should land on the dashboard.
+    if (target != null && isAppPage && (link != null || auth is AuthInitial)) {
+      _pending = link ?? uri.toString();
+    }
+    if (auth is Authenticated && target == Routes.dashboard) {
+      final pending = _pending;
+      _pending = null;
+      return pending ?? target;
+    }
+    return target ?? link;
+  }
+}
+
+GoRouter createAppRouter(AuthBloc auth) {
+  final redirect = AppRedirect();
+  return GoRouter(
+    navigatorKey: rootNavigationKey,
+    initialLocation: Routes.splash,
+    refreshListenable: GoRouterRefreshStream(auth.stream),
+    redirect: (_, state) =>
+        redirect(auth.state, state.uri, state.matchedLocation),
+    routes: [
+      GoRoute(path: Routes.splash, builder: (_, _) => const SplashPage()),
+      GoRoute(path: Routes.login, builder: (_, _) => const LoginPage()),
+      GoRoute(path: Routes.register, builder: (_, _) => const RegisterPage()),
+      GoRoute(
+        path: Routes.scheduleTask,
+        builder: (_, s) => BlocProvider(
+          create: (_) => getIt<CalendarCubit>(),
+          child: EventFormPage(
+            taskId: s.uri.queryParameters['taskId'],
+            taskTitle: s.uri.queryParameters['title'],
+          ),
         ),
       ),
-    ),
 
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) =>
-          AppShell(navShell: navigationShell),
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.dashboard,
-              builder: (_, _) => const DashboardPage(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            // One TasksBloc for the list and every page pushed from it.
-            ShellRoute(
-              builder: (_, _, child) => BlocProvider(
-                create: (_) => getIt<TasksBloc>()..add(const TasksSubscribed()),
-                child: child,
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AppShell(navShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.dashboard,
+                builder: (_, _) => const DashboardPage(),
               ),
-              routes: [
-                GoRoute(
-                  path: Routes.tasks,
-                  builder: (_, _) => const TasksPage(),
-                  routes: [
-                    // 'new' must come before ':id', or "new" would be an id.
-                    GoRoute(
-                      path: 'new',
-                      builder: (_, _) => const TaskFormPage(),
-                    ),
-                    GoRoute(
-                      path: ':id',
-                      builder: (_, s) =>
-                          TaskDetailsPage(id: s.pathParameters['id']!),
-                      routes: [
-                        GoRoute(
-                          path: 'edit',
-                          builder: (_, s) =>
-                              TaskFormPage(id: s.pathParameters['id']),
-                        ),
-                      ],
-                    ),
-                  ],
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              // One TasksBloc for the list and every page pushed from it.
+              ShellRoute(
+                builder: (_, _, child) => BlocProvider(
+                  create: (_) =>
+                      getIt<TasksBloc>()..add(const TasksSubscribed()),
+                  child: child,
                 ),
-              ],
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            ShellRoute(
-              builder: (_, _, child) => BlocProvider(
-                create: (_) => getIt<CalendarCubit>()..load(),
-                child: child,
+                routes: [
+                  GoRoute(
+                    path: Routes.tasks,
+                    builder: (_, _) => const TasksPage(),
+                    routes: [
+                      // 'new' must come before ':id', or "new" would be an id.
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const TaskFormPage(),
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, s) =>
+                            TaskDetailsPage(id: s.pathParameters['id']!),
+                        routes: [
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, s) =>
+                                TaskFormPage(id: s.pathParameters['id']),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              routes: [
-                GoRoute(
-                  path: Routes.calendar,
-                  builder: (_, _) => const CalendarPage(),
-                  routes: [
-                    GoRoute(
-                      path: 'new',
-                      builder: (_, s) => EventFormPage(
-                        initialDate: DateTime.tryParse(
-                          s.uri.queryParameters['date'] ?? '',
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              ShellRoute(
+                builder: (_, _, child) => BlocProvider(
+                  create: (_) => getIt<CalendarCubit>()..load(),
+                  child: child,
+                ),
+                routes: [
+                  GoRoute(
+                    path: Routes.calendar,
+                    builder: (_, _) => const CalendarPage(),
+                    routes: [
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, s) => EventFormPage(
+                          initialDate: DateTime.tryParse(
+                            s.uri.queryParameters['date'] ?? '',
+                          ),
                         ),
                       ),
-                    ),
+                      GoRoute(
+                        path: 'events/:id',
+                        builder: (_, s) =>
+                            EventFormPage(id: s.pathParameters['id']),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.habits,
+                builder: (_, _) => const HabitsPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.more,
+                builder: (_, _) => const MorePage(),
+                routes: [
+                  if (kDebugMode)
                     GoRoute(
-                      path: 'events/:id',
-                      builder: (_, s) =>
-                          EventFormPage(id: s.pathParameters['id']),
+                      path: 'gallery',
+                      parentNavigatorKey: rootNavigationKey,
+                      builder: (_, _) => const GalleryPage(),
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(path: Routes.habits, builder: (_, _) => const HabitsPage()),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: Routes.more,
-              builder: (_, _) => const MorePage(),
-              routes: [
-                if (kDebugMode)
-                  GoRoute(
-                    path: 'gallery',
-                    parentNavigatorKey: rootNavigationKey,
-                    builder: (_, _) => const GalleryPage(),
-                  ),
-                if (kDebugMode)
-                  GoRoute(
-                    path: 'dev',
-                    parentNavigatorKey: rootNavigationKey,
-                    builder: (_, _) => DevToolsPage(
-                      settings: getIt<MockSettings>(),
-                      server: getIt<MockServerState>(),
+                  if (kDebugMode)
+                    GoRoute(
+                      path: 'dev',
+                      parentNavigatorKey: rootNavigationKey,
+                      builder: (_, _) => DevToolsPage(
+                        settings: getIt<MockSettings>(),
+                        server: getIt<MockServerState>(),
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ),
-  ],
-);
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+}

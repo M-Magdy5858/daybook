@@ -10,6 +10,8 @@ import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
 import 'package:daybook/core/network/mock/routes/event_routes.dart';
 import 'package:daybook/core/network/mock/routes/task_routes.dart';
+import 'package:daybook/core/notifications/notification_service.dart';
+import 'package:daybook/core/notifications/reminder_scheduler.dart';
 import 'package:daybook/core/routing/app_router.dart';
 import 'package:daybook/core/storage/app_database.dart';
 import 'package:daybook/core/storage/outbox.dart';
@@ -32,6 +34,7 @@ import 'package:daybook/features/calendar/data/repositories/event_repository_imp
 import 'package:daybook/features/calendar/data/sync/event_sync_store.dart';
 import 'package:daybook/features/calendar/domain/repositories/event_repository.dart';
 import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart';
+import 'package:daybook/features/calendar/presentation/event_reminders.dart';
 import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:daybook/features/tasks/data/sync/task_sync_store.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
@@ -41,8 +44,10 @@ import 'package:daybook/features/tasks/domain/usecases/refresh_tasks.dart';
 import 'package:daybook/features/tasks/domain/usecases/save_task.dart';
 import 'package:daybook/features/tasks/domain/usecases/watch_tasks.dart';
 import 'package:daybook/features/tasks/presentation/bloc/tasks_bloc.dart';
+import 'package:daybook/features/tasks/presentation/task_reminders.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -55,6 +60,7 @@ Future<void> configureDependencies({bool testing = false}) async {
   _registerSync();
   _registerTasks();
   _registerCalendar();
+  _registerReminders();
 }
 
 /// One engine syncs every kind of item through the shared outbox.
@@ -177,19 +183,45 @@ void _registerCalendar() {
     );
 }
 
+void _registerReminders() {
+  getIt
+    ..registerLazySingleton<NotificationService>(LocalNotificationService.new)
+    ..registerLazySingleton<ReminderScheduler>(
+      () => ReminderScheduler(
+        getIt(),
+        sources: [
+          () => getIt<WatchTasks>()().map(taskReminders),
+          () => getIt<EventRepository>().watchEvents().map(
+            (events) => eventReminders(events, DateTime.now()),
+          ),
+        ],
+      ),
+    );
+}
+
 /// Runs background services only while someone is logged in. Called from
 /// `main()` rather than [configureDependencies], because widget tests have
 /// no connectivity plugin.
 void startSessionServices() {
   final auth = getIt<AuthBloc>();
   final sync = getIt<SyncEngine>();
-  void apply(AuthState state) => switch (state) {
-    Authenticated() => sync.start(),
-    Unauthenticated() => sync.stop(),
-    _ => null,
-  };
+  final reminders = getIt<ReminderScheduler>();
+  void apply(AuthState state) {
+    switch (state) {
+      case Authenticated():
+        sync.start();
+        reminders.start();
+      case Unauthenticated():
+        sync.stop();
+        reminders.stop(); // and cancel them, so the next user won't get them
+      default:
+    }
+  }
+
   apply(auth.state);
   auth.stream.listen(apply);
+  // A repeating event's next reminder is scheduled when the app comes back.
+  AppLifecycleListener(onResume: reminders.rescan);
 }
 
 /// A Dio pointed at the mock or real API. Used for the main client and for

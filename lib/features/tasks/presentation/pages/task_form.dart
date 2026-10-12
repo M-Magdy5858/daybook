@@ -1,3 +1,4 @@
+import 'package:daybook/core/notifications/notification_service.dart';
 import 'package:daybook/core/theme/app_spacing.dart';
 import 'package:daybook/core/utils/id.dart';
 import 'package:daybook/features/tasks/domain/entities/priority.dart';
@@ -61,7 +62,7 @@ class _TaskFormPageState extends State<TaskFormPage> {
       context: context,
       initialTime: TimeOfDay.fromDateTime(_due ?? DateTime(0, 1, 1, 9)),
     );
-    if (time == null) return;
+    if (time == null || !mounted) return;
     setState(
       () => _due = DateTime(
         date.year,
@@ -71,6 +72,9 @@ class _TaskFormPageState extends State<TaskFormPage> {
         time.minute,
       ),
     );
+    // The moment a reminder makes sense, so the system prompt explains
+    // itself. The OS only actually asks once.
+    context.read<NotificationService>().requestPermission();
   }
 
   Future<void> _pickRecurrence() async {
