@@ -34,6 +34,7 @@ abstract final class Routes {
   static const more = '/more';
   static const expenses = '/more/expenses';
   static const expenseNew = '/more/expenses/new';
+  static const expenseBudgets = '/more/expenses/budgets';
   static const receiptScan = '/more/expenses/scan';
   static const chat = '/more/chat';
   static String chatRoom(String id) => '/more/chat/$id';

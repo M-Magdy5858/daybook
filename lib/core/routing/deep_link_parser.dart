@@ -7,6 +7,7 @@ abstract final class DeepLinks {
   static String task(String id) => '$scheme://task/$id';
   static String event(String id) => '$scheme://event/$id';
   static String habit(String id) => '$scheme://habit/$id';
+  static const expenses = '$scheme://expenses';
 
   /// The app route for [uri], or `null` if it isn't a `daybook://` link.
   /// Unknown or incomplete links go to the dashboard.
@@ -21,6 +22,7 @@ abstract final class DeepLinks {
       ('task', final String id) => Routes.taskDetail(id),
       ('event', final String id) => Routes.eventDetail(id),
       ('habit', final String id) => Routes.habitDetail(id),
+      ('expenses', _) => Routes.expenses,
       _ => Routes.dashboard,
     };
   }

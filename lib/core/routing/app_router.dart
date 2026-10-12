@@ -14,6 +14,10 @@ import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart
 import 'package:daybook/features/calendar/presentation/pages/calendar.dart';
 import 'package:daybook/features/calendar/presentation/pages/event_form.dart';
 import 'package:daybook/features/dashboard/presentation/pages/dashboard.dart';
+import 'package:daybook/features/expenses/presentation/cubit/expenses_cubit.dart';
+import 'package:daybook/features/expenses/presentation/pages/budgets.dart';
+import 'package:daybook/features/expenses/presentation/pages/expenses.dart';
+import 'package:daybook/features/expenses/presentation/pages/transaction_form.dart';
 import 'package:daybook/features/habits/presentation/cubit/habits_cubit.dart';
 import 'package:daybook/features/habits/presentation/pages/habit_details.dart';
 import 'package:daybook/features/habits/presentation/pages/habit_form.dart';
@@ -219,6 +223,28 @@ GoRouter createAppRouter(AuthBloc auth) {
                 path: Routes.more,
                 builder: (_, _) => const MorePage(),
                 routes: [
+                  ShellRoute(
+                    builder: (_, _, child) => BlocProvider(
+                      create: (_) => getIt<ExpensesCubit>()..load(),
+                      child: child,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'expenses',
+                        builder: (_, _) => const ExpensesPage(),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            builder: (_, _) => const TransactionFormPage(),
+                          ),
+                          GoRoute(
+                            path: 'budgets',
+                            builder: (_, _) => const BudgetsPage(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                   if (kDebugMode)
                     GoRoute(
                       path: 'gallery',

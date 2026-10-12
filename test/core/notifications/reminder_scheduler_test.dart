@@ -31,6 +31,8 @@ class FakeNotifications implements NotificationService {
   Future<String?> takeLaunchLink() async => null;
   @override
   Future<bool> requestPermission() async => true;
+  @override
+  Future<void> showNow(Reminder r) async {}
 }
 
 void main() {

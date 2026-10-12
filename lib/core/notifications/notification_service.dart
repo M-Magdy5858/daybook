@@ -20,6 +20,10 @@ abstract interface class NotificationService {
   Future<bool> requestPermission();
 
   Future<void> schedule(Reminder reminder);
+
+  /// Show [reminder] right now, ignoring its `when`.
+  Future<void> showNow(Reminder reminder);
+
   Future<void> cancel(int id);
 
   /// Ids of notifications scheduled but not shown yet.
@@ -100,17 +104,7 @@ class LocalNotificationService implements NotificationService {
       title: reminder.title,
       body: reminder.body,
       scheduledDate: tz.TZDateTime.from(reminder.when, tz.local),
-      notificationDetails: NotificationDetails(
-        android: AndroidNotificationDetails(
-          reminder.channel.name,
-          reminder.channel.title,
-          channelDescription: reminder.channel.description,
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: const DarwinNotificationDetails(),
-        macOS: const DarwinNotificationDetails(),
-      ),
+      notificationDetails: _details(reminder.channel),
       // Inexact needs no special permission; a minute late is fine here.
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: reminder.link,
@@ -122,6 +116,28 @@ class LocalNotificationService implements NotificationService {
       },
     );
   }
+
+  @override
+  Future<void> showNow(Reminder reminder) => _plugin.show(
+    id: reminder.notificationId,
+    title: reminder.title,
+    body: reminder.body,
+    notificationDetails: _details(reminder.channel),
+    payload: reminder.link,
+  );
+
+  static NotificationDetails _details(ReminderChannel channel) =>
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.name,
+          channel.title,
+          channelDescription: channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: const DarwinNotificationDetails(),
+        macOS: const DarwinNotificationDetails(),
+      );
 
   @override
   Future<void> cancel(int id) => _plugin.cancel(id: id);

@@ -1,6 +1,6 @@
 # Daybook
 
-Daybook is a personal organizer built with Flutter: **tasks**, a **calendar**, **habits** and **reminders**, with expenses and more on the way.
+Daybook is a personal organizer built with Flutter: **tasks**, a **calendar**, **habits**, **expenses** and **reminders**, with more on the way.
 
 It's also a learning project. Every part was built one small step at a time, so the code doubles as a reference for how a real Flutter app fits together. This README explains the architecture in plain words and lists every Flutter and Dart concept used, with a link to where you can see it in the code.
 
@@ -27,6 +27,7 @@ It's also a learning project. Every part was built one small step at a time, so 
 | **Offline** | Tasks and events work with no internet. Changes wait in a queue and sync when you're back online. |
 | **Calendar** | Month, week, day and agenda views. Repeating events. Drag an event to a new time. Turn a task into an event. |
 | **Habits** | Track daily or some-days habits with a check button, streaks, a weekly progress ring and a year heatmap you can tap to fix any day. Optional daily reminder. |
+| **Expenses** | Log income and spending by account and category. See the month's totals, a donut chart by category, the last 6 months as bars, and budgets that warn at 80% and notify you past 100%. (More → Expenses) |
 | **Reminders** | A notification when a task is due and 15 minutes before an event, even with the app closed. Tapping it opens that task or event. |
 | **Deep links** | Links like `daybook://task/123` open the app on that task, and they wait for you to log in first if needed. |
 | **Developer tools** | (Debug builds) Slow the server down, make it fail on purpose, go "offline", or edit a task "on another device". |
@@ -153,10 +154,10 @@ Different features use different tools so you can compare them:
 | Feature | Tool | Why it fits |
 | --- | --- | --- |
 | Auth, Tasks | **Bloc** (events in, states out) | Many kinds of user actions; named events make them easy to follow and test |
-| Calendar, Habits | **Cubit** (methods in, states out) | Simpler: `cubit.next()` instead of `add(NextPressed())` |
+| Calendar, Habits, Expenses | **Cubit** (methods in, states out) | Simpler: `cubit.next()` instead of `add(NextPressed())` |
 | Small UI bits (a form, a toggle) | **setState** | State that only one widget cares about |
 
-Coming later: Expenses (Cubit), Settings (ChangeNotifier), Chat (Riverpod).
+Coming later: Settings (ChangeNotifier), Chat (Riverpod).
 
 **Bloc or Cubit? When I'd pick each**
 
@@ -277,6 +278,9 @@ Each row: the concept in one line, and a file where you can see it in action.
 | Collection `if` / `for` / spread | Build lists inline | [`task_details.dart`](lib/features/tasks/presentation/pages/task_details.dart) |
 | `abstract interface class` | A contract with no code | [`task_repository.dart`](lib/features/tasks/domain/repositories/task_repository.dart) |
 | Equatable | Compare objects by their fields | [`failures.dart`](lib/core/error/failures.dart) |
+| Operator overloading | Write `a + b` for your own class | [`money.dart`](lib/shared/models/money.dart) |
+| `Comparable` | Let a class be sorted | [`money.dart`](lib/shared/models/money.dart) (`compareTo`) |
+| `fold` | Add up a list, like JavaScript's `reduce` | [`expense_summary.dart`](lib/features/expenses/domain/services/expense_summary.dart) |
 | Safe date math | `DateTime(y, m, d + 1)` instead of adding 24 h (daylight saving!) | [`recurrence_calculator.dart`](lib/shared/services/recurrence_calculator.dart) |
 
 ### Widgets and layout
@@ -297,6 +301,10 @@ Each row: the concept in one line, and a file where you can see it in action.
 | `AnimatedBuilder` | Redraw on every animation frame | [`progress_ring.dart`](lib/shared/widgets/progress_ring.dart) |
 | `SingleTickerProviderStateMixin` (`vsync`) | Tie an animation to screen refreshes | [`progress_ring.dart`](lib/shared/widgets/progress_ring.dart) |
 | `didUpdateWidget` | React when the parent passes new values | [`progress_ring.dart`](lib/shared/widgets/progress_ring.dart) |
+| Charts by hand | A donut (`drawArc` per slice) and bars (`drawRRect` per month) | [`donut_chart.dart`](lib/features/expenses/presentation/widgets/donut_chart.dart), [`bar_chart.dart`](lib/features/expenses/presentation/widgets/bar_chart.dart) |
+| Constant icons only | `IconData(code)` built at run time breaks release builds; map codes to `Icons.*` | [`category_icon.dart`](lib/features/expenses/presentation/widgets/category_icon.dart) |
+| A dialog that owns its controller | Dispose the text controller when the dialog is gone, not when `showDialog` returns | [`budgets.dart`](lib/features/expenses/presentation/pages/budgets.dart) (`_BudgetDialog`) |
+| `DropdownButtonFormField` | A dropdown inside a form, with validation | [`transaction_form.dart`](lib/features/expenses/presentation/pages/transaction_form.dart) |
 | `GestureDetector` + tap position | Work out what was tapped on a drawing | [`habit_heatmap.dart`](lib/features/habits/presentation/widgets/habit_heatmap.dart) (`onTapUp`) |
 | `LayoutBuilder` | Lay out by the space you actually have | [`app_shell.dart`](lib/core/routing/app_shell.dart) (bottom bar vs side rail) |
 | `ListView.builder` + keys | Fast long lists; keys keep rows straight | [`tasks.dart`](lib/features/tasks/presentation/pages/tasks.dart) |
@@ -322,7 +330,7 @@ Each row: the concept in one line, and a file where you can see it in action.
 | --- | --- | --- |
 | Bloc: events → states | `add(Event)` in, `emit(State)` out | [`auth_bloc.dart`](lib/features/auth/presentation/bloc/auth_bloc.dart) |
 | Cubit | Like Bloc, but call methods instead of adding events | [`calendar_cubit.dart`](lib/features/calendar/presentation/cubit/calendar_cubit.dart), [`habits_cubit.dart`](lib/features/habits/presentation/cubit/habits_cubit.dart) |
-| Derived state | Store the data; work out streaks and totals from it | [`habits_state.dart`](lib/features/habits/presentation/cubit/habits_state.dart) (`HabitView`) |
+| Derived state | Store the data; work out streaks and totals from it | [`habits_state.dart`](lib/features/habits/presentation/cubit/habits_state.dart) (`HabitView`), [`expenses_state.dart`](lib/features/expenses/presentation/cubit/expenses_state.dart) (getters) |
 | `BlocProvider` / `BlocProvider.value` | Put a Bloc in the tree (new / existing) | [`app_router.dart`](lib/core/routing/app_router.dart), [`app.dart`](lib/app.dart) |
 | `BlocBuilder` / `BlocListener` / `BlocConsumer` | Redraw / do one-off actions / both | [`tasks.dart`](lib/features/tasks/presentation/pages/tasks.dart), [`login.dart`](lib/features/auth/presentation/pages/login.dart) |
 | `BlocSelector`, `context.select` | Rebuild only when one value changes | [`sync_badge.dart`](lib/features/tasks/presentation/widgets/sync_badge.dart) |
@@ -355,6 +363,7 @@ Each row: the concept in one line, and a file where you can see it in action.
 | Notification channels | Android categories users can mute separately (Tasks, Events) | [`reminder.dart`](lib/core/notifications/reminder.dart) |
 | Asking for permission at the right moment | Ask when the user sets a due time, not at launch | [`task_form.dart`](lib/features/tasks/presentation/pages/task_form.dart) |
 | Three app states for a tap | Open, in the background, or closed (cold start) | [`main.dart`](lib/main.dart) |
+| Instant notifications | Show one now, e.g. "Food is over budget" | [`notification_service.dart`](lib/core/notifications/notification_service.dart) (`showNow`) |
 | Repeating notifications | The OS fires a habit reminder every day (or weekday) on its own | [`habit_reminders.dart`](lib/features/habits/presentation/habit_reminders.dart) |
 | Keeping data and alerts in step | Watch the data; schedule, reschedule or cancel to match | [`reminder_scheduler.dart`](lib/core/notifications/reminder_scheduler.dart) |
 | Stable ids | The same item always gets the same notification id, so it can be cancelled | [`reminder.dart`](lib/core/notifications/reminder.dart) (`notificationIdFor`) |
@@ -379,6 +388,8 @@ Each row: the concept in one line, and a file where you can see it in action.
 
 | Concept | In one line | See it in |
 | --- | --- | --- |
+| Money as whole numbers | Store piasters in an `int`, never a `double` (`0.1 + 0.2` ≠ `0.3`) | [`money.dart`](lib/shared/models/money.dart), [`expenses_tables.dart`](lib/core/storage/tables/expenses_tables.dart) |
+| `intl` formatting | Show money the way each language writes it | [`money.dart`](lib/shared/models/money.dart) (`NumberFormat.currency`) |
 | Secure storage | Keep tokens in the Keychain / encrypted storage | [`token_storage.dart`](lib/core/storage/token_storage.dart) |
 | Drift tables | SQLite tables written as Dart classes | [`tasks_table.dart`](lib/core/storage/tables/tasks_table.dart) |
 | Reactive queries | `.watch()` emits on every change | [`task_local_data_source.dart`](lib/features/tasks/data/datasources/task_local_data_source.dart) |
@@ -417,6 +428,8 @@ flutter test
 | **Network** | Errors map correctly; refresh runs once | [`auth_interceptor_test.dart`](test/core/network/auth_interceptor_test.dart) |
 | **Database** | Queries, streams and cascades work | [`app_database_test.dart`](test/core/storage/app_database_test.dart) (in-memory SQLite) |
 | **Sync, end to end** | Offline edits arrive in order; conflicts resolve | [`sync_engine_test.dart`](test/core/sync/sync_engine_test.dart) (real engine + mock server) |
+| **Money** | Exact parsing and adding; formatting in English and Arabic | [`money_test.dart`](test/shared/models/money_test.dart) |
+| **Expenses** | Monthly totals ignore other months; changing month recomputes; the budget alert fires once | [`expenses_test.dart`](test/features/expenses/expenses_test.dart) |
 | **Habits** | Streak rules (scheduled days only); ticking today updates the streak | [`habits_test.dart`](test/features/habits/habits_test.dart) |
 | **Animation** | The ring builds and animates at 0, 0.5 and 1 | [`progress_ring_test.dart`](test/shared/widgets/progress_ring_test.dart) |
 | **Reminders** | Scheduled once, rescheduled on edit, cancelled when done | [`reminder_scheduler_test.dart`](test/core/notifications/reminder_scheduler_test.dart) (fake notification service) |
@@ -435,7 +448,7 @@ Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `
 | 1. Foundations: routing, errors, theme, DI | ✅ Done |
 | 2. Authentication: login, mock API, sessions | ✅ Done |
 | 3. Tasks: domain, screens, server, database, offline sync | ✅ Done |
-| 4. More features: **calendar** ✅, **reminders & deep links** ✅, **habits** ✅, expenses, dashboard, settings & Arabic | 🚧 In progress |
+| 4. More features: **calendar** ✅, **reminders & deep links** ✅, **habits** ✅, **expenses** ✅, dashboard, settings & Arabic | 🚧 In progress |
 | 5. Device & real-time: attachments, receipt scanning, chat, push, maps, search | ⏳ |
 | 6. Platform & polish: native code, tablets/desktop, accessibility, background sync, performance | ⏳ |
 | 7. Ship it: end-to-end tests, CI, signed release | ⏳ |
@@ -445,5 +458,6 @@ Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `
 - The mock server keeps its data in memory, so it resets when the app restarts (your local database doesn't).
 - Items deleted on the server aren't removed locally yet.
 - Logging out doesn't clear the local database (it does cancel all reminders).
+- Expenses use one currency (EGP); amounts in different currencies can't be added together.
 - Only the soonest 50 reminders are scheduled at a time, because iOS allows at most 64 waiting notifications.
 - A repeating event gets a reminder for its next occurrence only; the one after is scheduled when you next open the app.

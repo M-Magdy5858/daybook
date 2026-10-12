@@ -4,7 +4,8 @@ import 'package:equatable/equatable.dart';
 enum ReminderChannel {
   tasks('Tasks', 'Reminders for task due times'),
   events('Events', 'Reminders before calendar events'),
-  habits('Habits', 'Daily habit reminders');
+  habits('Habits', 'Daily habit reminders'),
+  budgets('Budgets', 'When spending goes over a budget');
 
   const ReminderChannel(this.title, this.description);
   final String title;

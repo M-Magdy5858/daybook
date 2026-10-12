@@ -9,7 +9,8 @@ class MockServerState {
   MockServerState({DateTime? now})
     : tasks = _seedTasks(now ?? DateTime.now()),
       events = _seedEvents(now ?? DateTime.now()),
-      habits = _seedHabits(now ?? DateTime.now());
+      habits = _seedHabits(now ?? DateTime.now()),
+      transactions = _seedTransactions(now ?? DateTime.now());
 
   final users = <MockUser>[
     MockUser('1', 'Demo', 'demo@daybook.dev', 'password123'),
@@ -23,6 +24,13 @@ class MockServerState {
 
   /// Habits as JSON maps (with their completed days), keyed by id.
   final Map<String, Map<String, dynamic>> habits;
+
+  /// Expense accounts and categories (with budgets), keyed by id.
+  final Map<String, Map<String, dynamic>> accounts = _seedAccounts();
+  final Map<String, Map<String, dynamic>> categories = _seedCategories();
+
+  /// Money in and out, keyed by id. Amounts are whole piasters.
+  final Map<String, Map<String, dynamic>> transactions;
 
   /// Pretend someone edited [taskId] on another device: bump its version and
   /// change its title. Returns false if there's no such task.
@@ -218,5 +226,140 @@ class MockServerState {
       ])
         h['id'] as String: h,
     };
+  }
+
+  static final _seededAt = DateTime.utc(2026).toIso8601String();
+
+  static Map<String, Map<String, dynamic>> _seedAccounts() => {
+    for (final (id, name) in [('acc-cash', 'Cash'), ('acc-card', 'Bank card')])
+      id: {
+        'id': id,
+        'name': name,
+        'currency': 'EGP',
+        'updatedAt': _seededAt,
+        'version': 1,
+      },
+  };
+
+  // (id, name, icon code point, color, type, monthly budget in EGP)
+  static const _categorySeed = [
+    ('cat-food', 'Food', 0xe532, 0xFFE65100, 'expense', 4000),
+    ('cat-transport', 'Transport', 0xe1d5, 0xFF1E88E5, 'expense', 1500),
+    ('cat-shopping', 'Shopping', 0xe59a, 0xFF8E24AA, 'expense', 3000),
+    ('cat-bills', 'Bills', 0xe50d, 0xFF546E7A, 'expense', null),
+    ('cat-fun', 'Fun', 0xe40d, 0xFF00ACC1, 'expense', 1500),
+    ('cat-health', 'Health', 0xe396, 0xFF43A047, 'expense', null),
+    ('cat-salary', 'Salary', 0xe482, 0xFF2E7D32, 'income', null),
+    ('cat-gifts', 'Gifts', 0xe13e, 0xFFFDD835, 'income', null),
+  ];
+
+  static Map<String, Map<String, dynamic>> _seedCategories() => {
+    for (final (id, name, icon, color, type, budget) in _categorySeed)
+      id: {
+        'id': id,
+        'name': name,
+        'iconCode': icon,
+        'colorValue': color,
+        'type': type,
+        'budgetMinor': budget == null ? null : budget * 100,
+        'currency': 'EGP',
+        'updatedAt': _seededAt,
+        'version': 1,
+      },
+  };
+
+  /// Six months of history: a salary each month, rent and bills, and about
+  /// one smaller expense a day. "Random" but the same every run.
+  static Map<String, Map<String, dynamic>> _seedTransactions(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    var seed = 20261006;
+    int next(int max) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed % max;
+    }
+
+    final result = <String, Map<String, dynamic>>{};
+    void add(
+      DateTime day,
+      String category,
+      String account,
+      int pounds,
+      String type, [
+      String note = '',
+    ]) {
+      if (day.isAfter(today)) return;
+      final id = 'tx-${result.length + 1}';
+      final at = DateTime(day.year, day.month, day.day, 12).toUtc();
+      result[id] = {
+        'id': id,
+        'accountId': account,
+        'categoryId': category,
+        'amountMinor': pounds * 100 + next(100), // with some piasters
+        'currency': 'EGP',
+        'type': type,
+        'date': at.toIso8601String(),
+        'note': note,
+        'createdAt': at.toIso8601String(),
+        'updatedAt': _seededAt,
+        'version': 1,
+      };
+    }
+
+    const daily = [
+      ('cat-food', 80, 400, 'Groceries'),
+      ('cat-food', 60, 250, 'Lunch'),
+      ('cat-transport', 30, 150, 'Ride'),
+      ('cat-shopping', 200, 1200, ''),
+      ('cat-fun', 100, 400, 'Cinema'),
+      ('cat-health', 100, 600, 'Pharmacy'),
+    ];
+    for (var m = 5; m >= 0; m--) {
+      final month = DateTime(today.year, today.month - m);
+      add(month, 'cat-salary', 'acc-card', 25000, 'income', 'Salary');
+      add(
+        DateTime(month.year, month.month, 3),
+        'cat-bills',
+        'acc-card',
+        6500,
+        'expense',
+        'Rent',
+      );
+      add(
+        DateTime(month.year, month.month, 10),
+        'cat-bills',
+        'acc-card',
+        350 + next(300),
+        'expense',
+        'Electricity',
+      );
+      if (m.isEven) {
+        add(
+          DateTime(month.year, month.month, 15),
+          'cat-gifts',
+          'acc-cash',
+          500,
+          'income',
+          'Gift',
+        );
+      }
+      final days = DateTime(month.year, month.month + 1, 0).day;
+      for (var d = 1; d <= days; d++) {
+        if (next(10) < 3) continue; // some days nothing is spent
+        final (cat, min, max, note) = daily[next(daily.length)];
+        // Fun and shopping happen less often.
+        if ((cat == 'cat-shopping' || cat == 'cat-fun') && next(3) > 0) {
+          continue;
+        }
+        add(
+          DateTime(month.year, month.month, d),
+          cat,
+          next(2) == 0 ? 'acc-cash' : 'acc-card',
+          min + next(max - min),
+          'expense',
+          note,
+        );
+      }
+    }
+    return result;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:daybook/core/storage/tables/events_table.dart';
+import 'package:daybook/core/storage/tables/expenses_tables.dart';
 import 'package:daybook/core/storage/tables/habits_table.dart';
 import 'package:daybook/core/storage/tables/pending_mutations_table.dart';
 import 'package:daybook/core/storage/tables/tasks_table.dart';
@@ -8,7 +9,17 @@ import 'package:drift_flutter/drift_flutter.dart';
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Tasks, Subtasks, PendingMutations, Events, Habits, HabitCompletions],
+  tables: [
+    Tasks,
+    Subtasks,
+    PendingMutations,
+    Events,
+    Habits,
+    HabitCompletions,
+    Accounts,
+    ExpenseCategories,
+    Transactions,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   /// Tests pass `NativeDatabase.memory()` for a fresh in-RAM database.
@@ -16,7 +27,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'daybook'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +42,11 @@ class AppDatabase extends _$AppDatabase {
       if (from < 5) {
         await m.createTable(habits);
         await m.createTable(habitCompletions);
+      }
+      if (from < 6) {
+        await m.createTable(accounts);
+        await m.createTable(expenseCategories);
+        await m.createTable(transactions);
       }
     },
     // SQLite leaves foreign keys off unless asked, and cascades need them.
