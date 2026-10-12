@@ -9,6 +9,7 @@ import 'package:daybook/core/network/mock/mock_server_state.dart';
 import 'package:daybook/core/network/mock/mock_settings.dart';
 import 'package:daybook/core/network/mock/routes/auth_routes.dart';
 import 'package:daybook/core/network/mock/routes/event_routes.dart';
+import 'package:daybook/core/network/mock/routes/habit_routes.dart';
 import 'package:daybook/core/network/mock/routes/task_routes.dart';
 import 'package:daybook/core/notifications/notification_service.dart';
 import 'package:daybook/core/notifications/reminder_scheduler.dart';
@@ -35,6 +36,12 @@ import 'package:daybook/features/calendar/data/sync/event_sync_store.dart';
 import 'package:daybook/features/calendar/domain/repositories/event_repository.dart';
 import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart';
 import 'package:daybook/features/calendar/presentation/event_reminders.dart';
+import 'package:daybook/features/habits/data/datasources/habit_local_data_source.dart';
+import 'package:daybook/features/habits/data/repositories/habit_repository_impl.dart';
+import 'package:daybook/features/habits/data/sync/habit_sync_store.dart';
+import 'package:daybook/features/habits/domain/repositories/habit_repository.dart';
+import 'package:daybook/features/habits/presentation/cubit/habits_cubit.dart';
+import 'package:daybook/features/habits/presentation/habit_reminders.dart';
 import 'package:daybook/features/tasks/data/repositories/task_repository_impl.dart';
 import 'package:daybook/features/tasks/data/sync/task_sync_store.dart';
 import 'package:daybook/features/tasks/domain/repositories/task_repository.dart';
@@ -60,6 +67,7 @@ Future<void> configureDependencies({bool testing = false}) async {
   _registerSync();
   _registerTasks();
   _registerCalendar();
+  _registerHabits();
   _registerReminders();
 }
 
@@ -72,11 +80,18 @@ void _registerSync() {
     ..registerLazySingleton<EventLocalDataSource>(
       () => EventLocalDataSource(getIt()),
     )
+    ..registerLazySingleton<HabitLocalDataSource>(
+      () => HabitLocalDataSource(getIt()),
+    )
     ..registerLazySingleton<SyncEngine>(
       () => SyncEngine(
         outbox: getIt(),
         api: getIt(),
-        stores: [TaskSyncStore(getIt()), EventSyncStore(getIt())],
+        stores: [
+          TaskSyncStore(getIt()),
+          EventSyncStore(getIt()),
+          HabitSyncStore(getIt()),
+        ],
         connectivity: getIt(),
       ),
       dispose: (engine) => engine.stop(),
@@ -92,6 +107,7 @@ void _registerCore() {
       AuthRoutes(getIt()).register(router);
       TaskRoutes(getIt()).register(router);
       EventRoutes(getIt()).register(router);
+      HabitRoutes(getIt()).register(router);
       return router;
     })
     ..registerLazySingleton<AppDatabase>(
@@ -183,6 +199,20 @@ void _registerCalendar() {
     );
 }
 
+void _registerHabits() {
+  getIt
+    ..registerLazySingleton<HabitRepository>(
+      () => HabitRepositoryImpl(
+        db: getIt(),
+        local: getIt(),
+        outbox: getIt(),
+        sync: getIt(),
+      ),
+    )
+    // A fresh Cubit each time the Habits tab is built.
+    ..registerFactory<HabitsCubit>(() => HabitsCubit(getIt()));
+}
+
 void _registerReminders() {
   getIt
     ..registerLazySingleton<NotificationService>(LocalNotificationService.new)
@@ -193,6 +223,9 @@ void _registerReminders() {
           () => getIt<WatchTasks>()().map(taskReminders),
           () => getIt<EventRepository>().watchEvents().map(
             (events) => eventReminders(events, DateTime.now()),
+          ),
+          () => getIt<HabitRepository>().watchHabits().map(
+            (habits) => habitReminders(habits, DateTime.now()),
           ),
         ],
       ),

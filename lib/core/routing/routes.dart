@@ -27,7 +27,9 @@ abstract final class Routes {
   static String eventDetail(String id) => '/calendar/events/$id';
 
   static const habits = '/habits';
+  static const habitNew = '/habits/new';
   static String habitDetail(String id) => '/habits/$id';
+  static String habitEdit(String id) => '/habits/$id/edit';
 
   static const more = '/more';
   static const expenses = '/more/expenses';

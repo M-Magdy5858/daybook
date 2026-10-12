@@ -8,7 +8,8 @@ class MockUser {
 class MockServerState {
   MockServerState({DateTime? now})
     : tasks = _seedTasks(now ?? DateTime.now()),
-      events = _seedEvents(now ?? DateTime.now());
+      events = _seedEvents(now ?? DateTime.now()),
+      habits = _seedHabits(now ?? DateTime.now());
 
   final users = <MockUser>[
     MockUser('1', 'Demo', 'demo@daybook.dev', 'password123'),
@@ -19,6 +20,9 @@ class MockServerState {
 
   /// Calendar events as JSON maps, keyed by id.
   final Map<String, Map<String, dynamic>> events;
+
+  /// Habits as JSON maps (with their completed days), keyed by id.
+  final Map<String, Map<String, dynamic>> habits;
 
   /// Pretend someone edited [taskId] on another device: bump its version and
   /// change its title. Returns false if there's no such task.
@@ -146,6 +150,73 @@ class MockServerState {
         ),
       ])
         e['id'] as String: e,
+    };
+  }
+
+  /// A few habits with ~5 months of history, so streaks and the heatmap have
+  /// something to show. "Random" but the same every run.
+  static Map<String, Map<String, dynamic>> _seedHabits(DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final createdAt = DateTime(today.year, today.month, today.day - 150);
+    final seededAt = DateTime.utc(2026).toIso8601String();
+    String key(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-'
+        '${d.month.toString().padLeft(2, '0')}-'
+        '${d.day.toString().padLeft(2, '0')}';
+
+    Map<String, dynamic> habit(
+      String id,
+      String name,
+      int color,
+      List<int> weekdays,
+      int donePercent, {
+      int? reminderMinutes,
+    }) {
+      var seed = id.hashCode & 0x7fffffff;
+      final done = <String>[];
+      // Up to yesterday; today is left for the user to tick.
+      for (var i = 150; i >= 1; i--) {
+        final day = DateTime(today.year, today.month, today.day - i);
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        // The last week is always done, so the streak isn't zero.
+        final isDone = i <= 7 || seed % 100 < donePercent;
+        if (weekdays.contains(day.weekday) && isDone) done.add(key(day));
+      }
+      return {
+        'id': id,
+        'name': name,
+        'colorValue': color,
+        'weekdays': weekdays,
+        'reminderMinutes': reminderMinutes,
+        'completions': done,
+        'createdAt': createdAt.toUtc().toIso8601String(),
+        'updatedAt': seededAt,
+        'version': 1,
+      };
+    }
+
+    const everyDay = [1, 2, 3, 4, 5, 6, 7];
+    return {
+      for (final h in [
+        habit(
+          'habit-water',
+          'Drink 8 glasses of water',
+          0xFF1E88E5,
+          everyDay,
+          85,
+        ),
+        habit('habit-read', 'Read 20 pages', 0xFF8E24AA, everyDay, 60),
+        habit('habit-gym', 'Gym', 0xFFE65100, [1, 3, 5], 75),
+        habit(
+          'habit-meditate',
+          'Meditate',
+          0xFF43A047,
+          everyDay,
+          50,
+          reminderMinutes: 8 * 60,
+        ),
+      ])
+        h['id'] as String: h,
     };
   }
 }

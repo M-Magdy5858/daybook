@@ -13,4 +13,10 @@ extension DateX on DateTime {
 
   /// Minutes since midnight.
   int get minuteOfDay => hour * 60 + minute;
+
+  /// `2026-10-06`: the date only, as stored in JSON.
+  String get dayKey =>
+      '${year.toString().padLeft(4, '0')}-'
+      '${month.toString().padLeft(2, '0')}-'
+      '${day.toString().padLeft(2, '0')}';
 }

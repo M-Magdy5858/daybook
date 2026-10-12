@@ -14,6 +14,9 @@ import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart
 import 'package:daybook/features/calendar/presentation/pages/calendar.dart';
 import 'package:daybook/features/calendar/presentation/pages/event_form.dart';
 import 'package:daybook/features/dashboard/presentation/pages/dashboard.dart';
+import 'package:daybook/features/habits/presentation/cubit/habits_cubit.dart';
+import 'package:daybook/features/habits/presentation/pages/habit_details.dart';
+import 'package:daybook/features/habits/presentation/pages/habit_form.dart';
 import 'package:daybook/features/habits/presentation/pages/habits.dart';
 import 'package:daybook/features/settings/presentation/pages/dev_tools.dart';
 import 'package:daybook/features/settings/presentation/pages/gallery.dart';
@@ -177,9 +180,36 @@ GoRouter createAppRouter(AuthBloc auth) {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: Routes.habits,
-                builder: (_, _) => const HabitsPage(),
+              ShellRoute(
+                builder: (_, _, child) => BlocProvider(
+                  create: (_) => getIt<HabitsCubit>()..load(),
+                  child: child,
+                ),
+                routes: [
+                  GoRoute(
+                    path: Routes.habits,
+                    builder: (_, _) => const HabitsPage(),
+                    routes: [
+                      // 'new' must come before ':id', or "new" would be an id.
+                      GoRoute(
+                        path: 'new',
+                        builder: (_, _) => const HabitFormPage(),
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, s) =>
+                            HabitDetailsPage(id: s.pathParameters['id']!),
+                        routes: [
+                          GoRoute(
+                            path: 'edit',
+                            builder: (_, s) =>
+                                HabitFormPage(id: s.pathParameters['id']),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

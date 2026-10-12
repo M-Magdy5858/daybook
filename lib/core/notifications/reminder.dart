@@ -3,11 +3,23 @@ import 'package:equatable/equatable.dart';
 /// Notification channels. On Android users can mute each one separately.
 enum ReminderChannel {
   tasks('Tasks', 'Reminders for task due times'),
-  events('Events', 'Reminders before calendar events');
+  events('Events', 'Reminders before calendar events'),
+  habits('Habits', 'Daily habit reminders');
 
   const ReminderChannel(this.title, this.description);
   final String title;
   final String description;
+}
+
+/// How a reminder repeats after it first fires at `when`.
+enum ReminderRepeat {
+  none,
+
+  /// Every day at the same time.
+  daily,
+
+  /// Every week on the same weekday and time.
+  weekly,
 }
 
 /// A notification the app wants shown at [when]. Features turn their items
@@ -20,6 +32,7 @@ class Reminder extends Equatable {
     required this.when,
     required this.link,
     required this.channel,
+    this.repeat = ReminderRepeat.none,
   });
 
   /// Unique and stable for the same item, e.g. `task:abc123`.
@@ -31,6 +44,7 @@ class Reminder extends Equatable {
   /// A `daybook://` deep link opened when the notification is tapped.
   final String link;
   final ReminderChannel channel;
+  final ReminderRepeat repeat;
 
   /// The platform needs an int id. `String.hashCode` isn't promised to stay
   /// the same between app runs, so use our own hash (FNV-1a, 31 bits): the
@@ -47,5 +61,5 @@ class Reminder extends Equatable {
   }
 
   @override
-  List<Object?> get props => [key, title, body, when, link, channel];
+  List<Object?> get props => [key, title, body, when, link, channel, repeat];
 }

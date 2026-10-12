@@ -114,6 +114,12 @@ class LocalNotificationService implements NotificationService {
       // Inexact needs no special permission; a minute late is fine here.
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: reminder.link,
+      // Repeating reminders: the OS fires them again on its own.
+      matchDateTimeComponents: switch (reminder.repeat) {
+        ReminderRepeat.none => null,
+        ReminderRepeat.daily => DateTimeComponents.time,
+        ReminderRepeat.weekly => DateTimeComponents.dayOfWeekAndTime,
+      },
     );
   }
 
