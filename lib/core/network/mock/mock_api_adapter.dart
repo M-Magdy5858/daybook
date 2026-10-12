@@ -26,7 +26,7 @@ class MockApiAdapter implements HttpClientAdapter {
       );
     }
 
-    final response = switch (_settings.forcedError) {
+    final response = switch (_settings.forcedErrorFor(options.uri.path)) {
       ForcedError.offline => throw DioException.connectionError(
         requestOptions: options,
         reason: 'Simulated offline',

@@ -59,6 +59,8 @@ class _Memory implements ExpenseRepository {
   @override
   Future<Result<void>> saveCategory(ExpenseCategory c) async =>
       const Success(null);
+  @override
+  Future<Result<void>> pull() async => const Success(null);
 }
 
 void main() {

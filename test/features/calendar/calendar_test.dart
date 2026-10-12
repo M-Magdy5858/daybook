@@ -15,6 +15,9 @@ class _NoEvents implements EventRepository {
   Future<Result<void>> save(Event event) async => const Success(null);
   @override
   Future<Result<void>> delete(String id) async => const Success(null);
+
+  @override
+  Future<Result<void>> pull() async => const Success(null);
 }
 
 void main() {

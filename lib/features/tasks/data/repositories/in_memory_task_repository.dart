@@ -49,4 +49,7 @@ class InMemoryTaskRepository implements TaskRepository {
 
   @override
   Future<Result<void>> refresh() async => const Success(null);
+
+  @override
+  Future<Result<void>> pull() async => const Success(null);
 }

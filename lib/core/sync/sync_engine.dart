@@ -62,6 +62,21 @@ class SyncEngine {
   Future<Result<void>> syncNow() =>
       _running ??= _run().whenComplete(() => _running = null);
 
+  /// Fetch the latest server copies of just these kinds of item (e.g.
+  /// `{'task'}`), without pushing. One failing collection doesn't touch the
+  /// others, so a screen can refresh each of its sections on its own.
+  Future<Result<void>> pull(Set<String> entityTypes) async {
+    try {
+      for (final type in entityTypes) {
+        final store = _stores[type];
+        if (store != null) await _pullStore(store);
+      }
+      return const Success(null);
+    } catch (e) {
+      return Err(ErrorMapper.toFailure(e));
+    }
+  }
+
   Future<Result<void>> _run() async {
     try {
       await _push();

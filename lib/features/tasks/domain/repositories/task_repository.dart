@@ -15,4 +15,7 @@ abstract interface class TaskRepository {
 
   /// Push waiting changes and pull fresh data from the server.
   Future<Result<void>> refresh();
+
+  /// Fetch this collection's latest copies from the server, nothing else.
+  Future<Result<void>> pull();
 }

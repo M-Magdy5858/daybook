@@ -35,6 +35,9 @@ class _MemoryHabits implements HabitRepository {
 
   @override
   Future<Result<void>> delete(String id) async => const Success(null);
+
+  @override
+  Future<Result<void>> pull() async => const Success(null);
 }
 
 void main() {

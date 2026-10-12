@@ -14,6 +14,15 @@ class DevToolsPage extends StatefulWidget {
 }
 
 class _DevToolsPageState extends State<DevToolsPage> {
+  static const _paths = [
+    null,
+    '/tasks',
+    '/events',
+    '/habits',
+    '/categories',
+    '/transactions',
+  ];
+
   /// Lets you pick a server task and changes it "on another device".
   Future<void> _simulateServerEdit() async {
     final tasks = widget.server.tasks.values.toList()
@@ -70,6 +79,20 @@ class _DevToolsPageState extends State<DevToolsPage> {
             const ListTile(title: Text('Forced error')),
             for (final e in ForcedError.values)
               RadioListTile<ForcedError>(title: Text(e.name), value: e),
+            ListTile(
+              title: const Text('Only for'),
+              trailing: DropdownButton<String?>(
+                value: s.forcedErrorPath,
+                onChanged: (v) => setState(() => s.forcedErrorPath = v),
+                items: [
+                  for (final path in _paths)
+                    DropdownMenuItem(
+                      value: path,
+                      child: Text(path ?? 'Every request'),
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

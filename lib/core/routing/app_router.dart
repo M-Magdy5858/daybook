@@ -13,6 +13,7 @@ import 'package:daybook/features/auth/presentation/pages/splash.dart';
 import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart';
 import 'package:daybook/features/calendar/presentation/pages/calendar.dart';
 import 'package:daybook/features/calendar/presentation/pages/event_form.dart';
+import 'package:daybook/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:daybook/features/dashboard/presentation/pages/dashboard.dart';
 import 'package:daybook/features/expenses/presentation/cubit/expenses_cubit.dart';
 import 'package:daybook/features/expenses/presentation/pages/budgets.dart';
@@ -110,7 +111,10 @@ GoRouter createAppRouter(AuthBloc auth) {
             routes: [
               GoRoute(
                 path: Routes.dashboard,
-                builder: (_, _) => const DashboardPage(),
+                builder: (_, _) => BlocProvider(
+                  create: (_) => getIt<DashboardCubit>()..load(),
+                  child: const DashboardPage(),
+                ),
               ),
             ],
           ),

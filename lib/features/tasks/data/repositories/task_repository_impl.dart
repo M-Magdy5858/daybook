@@ -70,6 +70,9 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<Result<void>> refresh() => _sync.syncNow();
 
+  @override
+  Future<Result<void>> pull() => _sync.pull({'task'});
+
   Future<Result<T>> _guard<T>(Future<T> Function() body) async {
     try {
       return Success(await body());

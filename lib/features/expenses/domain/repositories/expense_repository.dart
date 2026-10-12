@@ -13,4 +13,7 @@ abstract interface class ExpenseRepository {
 
   /// Set or change a category's monthly budget (null removes it).
   Future<Result<void>> saveCategory(ExpenseCategory category);
+
+  /// Fetch this collection's latest copies from the server, nothing else.
+  Future<Result<void>> pull();
 }

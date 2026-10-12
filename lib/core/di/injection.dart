@@ -39,6 +39,7 @@ import 'package:daybook/features/calendar/data/sync/event_sync_store.dart';
 import 'package:daybook/features/calendar/domain/repositories/event_repository.dart';
 import 'package:daybook/features/calendar/presentation/cubit/calendar_cubit.dart';
 import 'package:daybook/features/calendar/presentation/event_reminders.dart';
+import 'package:daybook/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:daybook/features/expenses/data/datasources/expense_local_data_source.dart';
 import 'package:daybook/features/expenses/data/repositories/expense_repository_impl.dart';
 import 'package:daybook/features/expenses/data/sync/expense_sync_stores.dart';
@@ -77,6 +78,7 @@ Future<void> configureDependencies({bool testing = false}) async {
   _registerCalendar();
   _registerHabits();
   _registerExpenses();
+  _registerDashboard();
   _registerReminders();
 }
 
@@ -259,6 +261,19 @@ void _registerExpenses() {
         },
       ),
     );
+}
+
+/// No repositories of its own: it reuses every other feature's.
+void _registerDashboard() {
+  getIt.registerFactory<DashboardCubit>(
+    () => DashboardCubit(
+      tasks: getIt(),
+      events: getIt(),
+      habits: getIt(),
+      expenses: getIt(),
+      completeTask: getIt(),
+    ),
+  );
 }
 
 void _registerReminders() {

@@ -6,4 +6,7 @@ abstract interface class EventRepository {
   Stream<List<Event>> watchEvents();
   Future<Result<void>> save(Event event);
   Future<Result<void>> delete(String id);
+
+  /// Fetch this collection's latest copies from the server, nothing else.
+  Future<Result<void>> pull();
 }

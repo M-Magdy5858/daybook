@@ -54,6 +54,9 @@ class HabitRepositoryImpl implements HabitRepository {
     unawaited(_sync.syncNow());
   });
 
+  @override
+  Future<Result<void>> pull() => _sync.pull({'habit'});
+
   Future<Result<T>> _guard<T>(Future<T> Function() body) async {
     try {
       return Success(await body());

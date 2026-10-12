@@ -6,4 +6,7 @@ abstract interface class HabitRepository {
   Stream<List<Habit>> watchHabits();
   Future<Result<void>> save(Habit habit);
   Future<Result<void>> delete(String id);
+
+  /// Fetch this collection's latest copies from the server, nothing else.
+  Future<Result<void>> pull();
 }

@@ -22,6 +22,7 @@ It's also a learning project. Every part was built one small step at a time, so 
 
 | Area | What you can do |
 | --- | --- |
+| **Dashboard** | Good-morning greeting, quick actions (new task, add event, log expense), today's tasks you can tick, the next 3 events, today's habits on a ring, and this month's spending against your budgets. Each card loads on its own: if one fails, only that card shows Retry. Pull down to refresh. |
 | **Account** | Register, log in, stay logged in after restarting, log out. Expired sessions refresh on their own. |
 | **Tasks** | Create, edit, complete, delete (with Undo) and reorder tasks. Subtasks, due dates, priorities and repeating tasks. Search, filter and sort. |
 | **Offline** | Tasks and events work with no internet. Changes wait in a queue and sync when you're back online. |
@@ -30,7 +31,7 @@ It's also a learning project. Every part was built one small step at a time, so 
 | **Expenses** | Log income and spending by account and category. See the month's totals, a donut chart by category, the last 6 months as bars, and budgets that warn at 80% and notify you past 100%. (More → Expenses) |
 | **Reminders** | A notification when a task is due and 15 minutes before an event, even with the app closed. Tapping it opens that task or event. |
 | **Deep links** | Links like `daybook://task/123` open the app on that task, and they wait for you to log in first if needed. |
-| **Developer tools** | (Debug builds) Slow the server down, make it fail on purpose, go "offline", or edit a task "on another device". |
+| **Developer tools** | (Debug builds) Slow the server down, make it fail on purpose (every request, or just one path like `/tasks`), go "offline", or edit a task "on another device". |
 
 There is **no real backend yet**. The app talks to a fake server that lives inside the app (see [Mock API](#4-the-mock-api)), so requests, status codes and JSON are all real.
 
@@ -119,7 +120,7 @@ lib/
 │   ├── models/        Things several features use, like RecurrenceRule
 │   ├── services/      Shared logic, like RecurrenceCalculator
 │   └── extensions/    Handy additions, like context.colors and date.startOfWeek
-└── features/          auth · tasks · calendar · dashboard · habits · settings
+└── features/          auth · tasks · calendar · dashboard · habits · expenses · settings
 ```
 
 ### Following one tap through the app
@@ -154,7 +155,7 @@ Different features use different tools so you can compare them:
 | Feature | Tool | Why it fits |
 | --- | --- | --- |
 | Auth, Tasks | **Bloc** (events in, states out) | Many kinds of user actions; named events make them easy to follow and test |
-| Calendar, Habits, Expenses | **Cubit** (methods in, states out) | Simpler: `cubit.next()` instead of `add(NextPressed())` |
+| Calendar, Habits, Expenses, Dashboard | **Cubit** (methods in, states out) | Simpler: `cubit.next()` instead of `add(NextPressed())` |
 | Small UI bits (a form, a toggle) | **setState** | State that only one widget cares about |
 
 Coming later: Settings (ChangeNotifier), Chat (Riverpod).
@@ -226,6 +227,8 @@ This is the heart of Tasks and Calendar:
 5. **Conflicts:** each item has a `version`. If the server's copy is newer than the one you edited, it replies `409`, and **the most recent edit wins** (last-write-wins).
 
 Each kind of item (task, event) plugs into the same engine through a small [`SyncStore`](lib/core/sync/sync_store.dart).
+
+`SyncEngine.pull({'task'})` fetches just one collection. The Dashboard uses it so each card refreshes on its own: a failing `/tasks` never touches the events card.
 
 ### 7. Reminders and deep links
 
@@ -333,11 +336,15 @@ Each row: the concept in one line, and a file where you can see it in action.
 | Derived state | Store the data; work out streaks and totals from it | [`habits_state.dart`](lib/features/habits/presentation/cubit/habits_state.dart) (`HabitView`), [`expenses_state.dart`](lib/features/expenses/presentation/cubit/expenses_state.dart) (getters) |
 | `BlocProvider` / `BlocProvider.value` | Put a Bloc in the tree (new / existing) | [`app_router.dart`](lib/core/routing/app_router.dart), [`app.dart`](lib/app.dart) |
 | `BlocBuilder` / `BlocListener` / `BlocConsumer` | Redraw / do one-off actions / both | [`tasks.dart`](lib/features/tasks/presentation/pages/tasks.dart), [`login.dart`](lib/features/auth/presentation/pages/login.dart) |
-| `BlocSelector`, `context.select` | Rebuild only when one value changes | [`sync_badge.dart`](lib/features/tasks/presentation/widgets/sync_badge.dart) |
+| `BlocSelector`, `context.select` | Rebuild only when one value changes | [`sync_badge.dart`](lib/features/tasks/presentation/widgets/sync_badge.dart), [`dashboard.dart`](lib/features/dashboard/presentation/pages/dashboard.dart) (one per card) |
 | `buildWhen` / `listenWhen` | Skip rebuilds you don't need | [`tasks.dart`](lib/features/tasks/presentation/pages/tasks.dart) |
 | `emit.forEach` | Turn a stream into states | [`tasks_bloc.dart`](lib/features/tasks/presentation/bloc/tasks_bloc.dart) |
 | Event transformers | `droppable()` ignores repeats, `restartable()` cancels the old one | [`tasks_bloc.dart`](lib/features/tasks/presentation/bloc/tasks_bloc.dart) |
 | Status enum in one state class | `initial / loading / success / failure` | [`tasks_state.dart`](lib/features/tasks/presentation/bloc/tasks_state.dart) |
+| Per-section state | A small sealed `SectionState<T>` (loading / empty / data / error) per card instead of one `isLoading` for the page | [`section_state.dart`](lib/shared/models/section_state.dart), [`dashboard_section.dart`](lib/features/dashboard/presentation/widgets/dashboard_section.dart) |
+| Parallel loading | `Future.wait` starts every section at once: as slow as the slowest, not all of them added up | [`dashboard_cubit.dart`](lib/features/dashboard/presentation/cubit/dashboard_cubit.dart) (`load`) |
+| Composition | A feature with no data layer of its own, built from other features' repositories | [`dashboard_cubit.dart`](lib/features/dashboard/presentation/cubit/dashboard_cubit.dart) |
+| Ignoring stale results | Count loads; drop a slow older one that finishes after a newer one or after `close()` | [`dashboard_cubit.dart`](lib/features/dashboard/presentation/cubit/dashboard_cubit.dart) (`_loads`) |
 | Sealed state classes | One class per state | [`auth_state.dart`](lib/features/auth/presentation/bloc/auth_state.dart) |
 
 ### Navigation (go_router)
@@ -430,11 +437,12 @@ flutter test
 | **Sync, end to end** | Offline edits arrive in order; conflicts resolve | [`sync_engine_test.dart`](test/core/sync/sync_engine_test.dart) (real engine + mock server) |
 | **Money** | Exact parsing and adding; formatting in English and Arabic | [`money_test.dart`](test/shared/models/money_test.dart) |
 | **Expenses** | Monthly totals ignore other months; changing month recomputes; the budget alert fires once | [`expenses_test.dart`](test/features/expenses/expenses_test.dart) |
+| **Dashboard** | A failing `/tasks` breaks only the tasks card, and Retry reloads only it; the section widget in all four states | [`dashboard_test.dart`](test/features/dashboard/dashboard_test.dart) |
 | **Habits** | Streak rules (scheduled days only); ticking today updates the streak | [`habits_test.dart`](test/features/habits/habits_test.dart) |
 | **Animation** | The ring builds and animates at 0, 0.5 and 1 | [`progress_ring_test.dart`](test/shared/widgets/progress_ring_test.dart) |
 | **Reminders** | Scheduled once, rescheduled on edit, cancelled when done | [`reminder_scheduler_test.dart`](test/core/notifications/reminder_scheduler_test.dart) (fake notification service) |
 | **Deep links** | Links map to routes; a link waits for login | [`deep_links_test.dart`](test/core/routing/deep_links_test.dart) |
-| **App flow** | Log in and land on the Dashboard | [`widget_test.dart`](test/widget_test.dart) |
+| **App flow** | Log in and land on the Dashboard | [`widget_test.dart`](test/widget_test.dart) (in-memory database, because the Dashboard reads it) |
 
 Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `NativeDatabase.memory()`.
 
@@ -448,7 +456,7 @@ Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `
 | 1. Foundations: routing, errors, theme, DI | ✅ Done |
 | 2. Authentication: login, mock API, sessions | ✅ Done |
 | 3. Tasks: domain, screens, server, database, offline sync | ✅ Done |
-| 4. More features: **calendar** ✅, **reminders & deep links** ✅, **habits** ✅, **expenses** ✅, dashboard, settings & Arabic | 🚧 In progress |
+| 4. More features: **calendar** ✅, **reminders & deep links** ✅, **habits** ✅, **expenses** ✅, **dashboard** ✅, settings & Arabic | 🚧 In progress |
 | 5. Device & real-time: attachments, receipt scanning, chat, push, maps, search | ⏳ |
 | 6. Platform & polish: native code, tablets/desktop, accessibility, background sync, performance | ⏳ |
 | 7. Ship it: end-to-end tests, CI, signed release | ⏳ |
@@ -459,5 +467,6 @@ Tools: `flutter_test`, `bloc_test`, `mocktail`, fake Dio adapters, and Drift's `
 - Items deleted on the server aren't removed locally yet.
 - Logging out doesn't clear the local database (it does cancel all reminders).
 - Expenses use one currency (EGP); amounts in different currencies can't be added together.
+- Quick actions on the Dashboard switch to the form's own tab, so Back from the form lands on that tab's list, not the Dashboard.
 - Only the soonest 50 reminders are scheduled at a time, because iOS allows at most 64 waiting notifications.
 - A repeating event gets a reminder for its next occurrence only; the one after is scheduled when you next open the app.

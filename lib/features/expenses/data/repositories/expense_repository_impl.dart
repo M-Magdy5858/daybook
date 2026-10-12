@@ -71,6 +71,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     );
   });
 
+  @override
+  Future<Result<void>> pull() => _sync.pull({'category', 'transaction'});
+
   /// The local write and its outbox entry in one transaction, then sync.
   Future<Result<void>> _write(Future<void> Function() body) async {
     try {
